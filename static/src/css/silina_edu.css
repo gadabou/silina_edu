@@ -1,0 +1,107 @@
+/* SILINA-EDU Module CSS */
+
+/* Styles pour les bulletins de notes */
+.silina_report_card {
+    font-family: 'Arial', sans-serif;
+}
+
+.silina_report_card h2 {
+    color: #2c3e50;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.silina_report_card .student_info {
+    background-color: #ecf0f1;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.silina_report_card table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.silina_report_card th {
+    background-color: #3498db;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+.silina_report_card td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.silina_report_card tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Styles pour les badges de statut */
+.badge-admitted {
+    background-color: #27ae60 !important;
+    color: white !important;
+}
+
+.badge-failed {
+    background-color: #e74c3c !important;
+    color: white !important;
+}
+
+.badge-pending {
+    background-color: #f39c12 !important;
+    color: white !important;
+}
+
+/* Styles pour les cartes d'étudiants */
+.student_card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.student_card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* Styles pour les indicateurs de paiement */
+.payment_status_paid {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.payment_status_partial {
+    color: #f39c12;
+    font-weight: bold;
+}
+
+.payment_status_unpaid {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Styles pour les statistiques */
+.stat_box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 10px;
+}
+
+.stat_box h3 {
+    font-size: 2.5em;
+    margin: 0;
+}
+
+.stat_box p {
+    margin: 5px 0;
+    font-size: 1.1em;
+}

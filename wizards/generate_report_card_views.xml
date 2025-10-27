@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_generate_report_card_wizard_form" model="ir.ui.view">
+            <field name="name">silina.generate.report.card.wizard.form</field>
+            <field name="model">silina.generate.report.card.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Générer Bulletins de Notes">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="exam_id"/>
+                                <field name="academic_year_id"/>
+                                <field name="generation_type"/>
+                            </group>
+                            <group>
+                                <field name="template_type"/>
+                                <field name="language"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="classroom_ids" invisible="generation_type != 'classroom'" widget="many2many_tags"/>
+                            <field name="student_ids" invisible="generation_type != 'student'" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="include_rank"/>
+                            <field name="include_statistics"/>
+                            <field name="include_comments"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Aperçu" name="action_generate_preview" type="object" class="btn-secondary"/>
+                        <button string="Générer" name="action_generate" type="object" class="btn-primary"/>
+                        <button string="Annuler" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

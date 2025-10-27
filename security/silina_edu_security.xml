@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Catégories -->
+        <record id="module_category_silina_edu" model="ir.module.category">
+            <field name="name">SILINA-EDU</field>
+            <field name="description">Gestion Scolaire</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Groupes de sécurité -->
+        <record id="group_silina_edu_user" model="res.groups">
+            <field name="name">Utilisateur</field>
+            <field name="category_id" ref="module_category_silina_edu"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_silina_edu_teacher" model="res.groups">
+            <field name="name">Enseignant</field>
+            <field name="category_id" ref="module_category_silina_edu"/>
+            <field name="implied_ids" eval="[(4, ref('group_silina_edu_user'))]"/>
+        </record>
+
+        <record id="group_silina_edu_coordinator" model="res.groups">
+            <field name="name">Coordinateur</field>
+            <field name="category_id" ref="module_category_silina_edu"/>
+            <field name="implied_ids" eval="[(4, ref('group_silina_edu_teacher'))]"/>
+        </record>
+
+        <record id="group_silina_edu_manager" model="res.groups">
+            <field name="name">Administrateur</field>
+            <field name="category_id" ref="module_category_silina_edu"/>
+            <field name="implied_ids" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
+        </record>
+
+        <!-- Règles de sécurité au niveau des enregistrements -->
+
+        <!-- Étudiants -->
+        <record id="silina_student_rule_user" model="ir.rule">
+            <field name="name">Étudiant: Lecture seule pour utilisateur</field>
+            <field name="model_id" ref="model_silina_student"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="silina_student_rule_coordinator" model="ir.rule">
+            <field name="name">Étudiant: Tous droits pour coordinateur</field>
+            <field name="model_id" ref="model_silina_student"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Examens et Résultats -->
+        <record id="silina_exam_result_rule_teacher" model="ir.rule">
+            <field name="name">Résultat d'examen: Enseignant peut créer/modifier</field>
+            <field name="model_id" ref="model_silina_exam_result"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_teacher'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Paiements -->
+        <record id="silina_fee_payment_rule_coordinator" model="ir.rule">
+            <field name="name">Paiement: Coordinateur peut tout faire</field>
+            <field name="model_id" ref="model_silina_fee_payment"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

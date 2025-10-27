@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_bulk_student_promotion_wizard_form" model="ir.ui.view">
+            <field name="name">silina.bulk.student.promotion.wizard.form</field>
+            <field name="model">silina.bulk.student.promotion.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Passage en Masse">
+                    <sheet>
+                        <group invisible="state != 'draft'">
+                            <group>
+                                <field name="current_academic_year_id"/>
+                                <field name="new_academic_year_id"/>
+                                <field name="promotion_type"/>
+                            </group>
+                            <group>
+                                <field name="promotion_date"/>
+                                <field name="student_count"/>
+                            </group>
+                        </group>
+                        <group invisible="state != 'draft'">
+                            <field name="current_classroom_ids" widget="many2many_tags"/>
+                            <field name="student_ids" invisible="promotion_type != 'manual'"/>
+                        </group>
+                        <notebook invisible="state != 'preview'">
+                            <page string="Promotions">
+                                <field name="line_ids">
+                                    <tree editable="bottom">
+                                        <field name="student_id"/>
+                                        <field name="current_classroom_id"/>
+                                        <field name="current_level_id"/>
+                                        <field name="new_level_id"/>
+                                        <field name="new_classroom_id"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                        <field name="state" invisible="1"/>
+                    </sheet>
+                    <footer>
+                        <button string="Aperçu" name="action_preview" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button string="Promouvoir" name="action_promote" type="object" class="btn-primary" invisible="state != 'preview'"/>
+                        <button string="Retour" name="action_back_to_draft" type="object" invisible="state != 'preview'"/>
+                        <button string="Fermer" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

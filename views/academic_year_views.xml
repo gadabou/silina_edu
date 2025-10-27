@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue Tree -->
+        <record id="view_academic_year_tree" model="ir.ui.view">
+            <field name="name">silina.academic.year.tree</field>
+            <field name="model">silina.academic.year</field>
+            <field name="arch" type="xml">
+                <tree string="Années Scolaires" decoration-success="state=='active'" decoration-muted="state=='closed'">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                    <field name="is_current" widget="boolean_toggle"/>
+                    <field name="student_count"/>
+                    <field name="classroom_count"/>
+                    <field name="state" widget="badge" decoration-success="state=='active'" decoration-info="state=='draft'" decoration-muted="state=='closed'"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vue Form -->
+        <record id="view_academic_year_form" model="ir.ui.view">
+            <field name="name">silina.academic.year.form</field>
+            <field name="model">silina.academic.year</field>
+            <field name="arch" type="xml">
+                <form string="Année Scolaire">
+                    <header>
+                        <button name="action_activate" string="Activer" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_close" string="Fermer" type="object" invisible="state != 'active'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,active,closed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="%(action_classroom)d" type="action" class="oe_stat_button" icon="fa-users" context="{'search_default_academic_year_id': active_id}">
+                                <field name="classroom_count" widget="statinfo" string="Classes"/>
+                            </button>
+                            <button name="%(action_student)d" type="action" class="oe_stat_button" icon="fa-graduation-cap" context="{'search_default_academic_year_id': active_id}">
+                                <field name="student_count" widget="statinfo" string="Étudiants"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="code"/>
+                                <field name="is_current"/>
+                            </group>
+                            <group>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <field name="description"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_academic_year" model="ir.actions.act_window">
+            <field name="name">Années Scolaires</field>
+            <field name="res_model">silina.academic.year</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle année scolaire
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

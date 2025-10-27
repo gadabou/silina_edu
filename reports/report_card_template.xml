@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Rapport Standard -->
+        <record id="action_report_card_standard" model="ir.actions.report">
+            <field name="name">Bulletin de Notes (Standard)</field>
+            <field name="model">silina.student</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">silina_edu.report_card_standard_document</field>
+            <field name="report_file">silina_edu.report_card_standard_document</field>
+            <field name="binding_model_id" ref="model_silina_student"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="report_card_standard_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="student">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="text-center">
+                                <h2>BULLETIN DE NOTES</h2>
+                                <h4 t-esc="student.academic_year_id.name"/>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-6">
+                                    <strong>Nom:</strong> <span t-field="student.name"/><br/>
+                                    <strong>Matricule:</strong> <span t-field="student.registration_number"/><br/>
+                                    <strong>Classe:</strong> <span t-field="student.classroom_id.name"/><br/>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Date de naissance:</strong> <span t-field="student.date_of_birth"/><br/>
+                                    <strong>Âge:</strong> <span t-field="student.age"/> ans<br/>
+                                </div>
+                            </div>
+
+                            <t t-set="exam_id" t-value="context.get('exam_id')"/>
+                            <t t-if="exam_id">
+                                <t t-set="exam" t-value="env['silina.exam'].browse(exam_id)"/>
+                                <t t-set="results" t-value="env['silina.exam.result'].search([('exam_id', '=', exam_id), ('student_id', '=', student.id), ('state', '=', 'confirmed')])"/>
+                                <t t-set="summary" t-value="env['silina.exam.result.summary'].search([('exam_id', '=', exam_id), ('student_id', '=', student.id)], limit=1)"/>
+
+                                <div class="mt-4">
+                                    <h5>Examen: <span t-esc="exam.name"/></h5>
+                                </div>
+
+                                <table class="table table-sm table-bordered mt-3">
+                                    <thead>
+                                        <tr class="table-active">
+                                            <th>Matière</th>
+                                            <th>Coefficient</th>
+                                            <th>Note</th>
+                                            <th>Total</th>
+                                            <th>Mention</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="results" t-as="result">
+                                            <td><span t-field="result.subject_id.name"/></td>
+                                            <td><span t-field="result.coefficient"/></td>
+                                            <td><span t-field="result.marks_obtained"/></td>
+                                            <td><span t-field="result.total_marks"/></td>
+                                            <td><span t-field="result.grade"/></td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-active">
+                                            <td colspan="2"><strong>Moyenne Générale</strong></td>
+                                            <td colspan="3"><strong t-esc="'%.2f' % summary.average if summary else '0.00'"/>/20</td>
+                                        </tr>
+                                        <tr t-if="context.get('include_rank') and summary">
+                                            <td colspan="2"><strong>Rang</strong></td>
+                                            <td colspan="3"><strong t-esc="summary.rank"/> / <span t-esc="len(env['silina.exam.result.summary'].search([('exam_id', '=', exam_id), ('classroom_id', '=', student.classroom_id.id)]))"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2"><strong>Mention</strong></td>
+                                            <td colspan="3"><strong t-esc="summary.grade if summary else ''"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2"><strong>Décision</strong></td>
+                                            <td colspan="3"><strong t-esc="'ADMIS(E)' if summary and summary.is_passed else 'REFUSÉ(E)'"/></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+
+                                <div class="row mt-4">
+                                    <div class="col-6">
+                                        <p>Observations:</p>
+                                        <p>____________________</p>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <p>Le Directeur</p>
+                                        <p>____________________</p>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <!-- Rapport Moderne -->
+        <record id="action_report_card_modern" model="ir.actions.report">
+            <field name="name">Bulletin de Notes (Moderne)</field>
+            <field name="model">silina.student</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">silina_edu.report_card_modern_document</field>
+            <field name="report_file">silina_edu.report_card_modern_document</field>
+            <field name="binding_model_id" ref="model_silina_student"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="report_card_modern_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="student">
+                    <div class="page" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
+                        <div style="background: white; padding: 30px; border-radius: 15px;">
+                            <div class="text-center">
+                                <h1 style="color: #667eea;">BULLETIN DE NOTES</h1>
+                                <h4 t-esc="student.academic_year_id.name"/>
+                            </div>
+                            <!-- Même contenu que le standard mais avec un style moderne -->
+                            <div class="mt-4">
+                                <p><strong>Étudiant:</strong> <span t-field="student.name"/></p>
+                                <p><strong>Classe:</strong> <span t-field="student.classroom_id.name"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <!-- Rapport Détaillé -->
+        <record id="action_report_card_detailed" model="ir.actions.report">
+            <field name="name">Bulletin de Notes (Détaillé)</field>
+            <field name="model">silina.student</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">silina_edu.report_card_detailed_document</field>
+            <field name="report_file">silina_edu.report_card_detailed_document</field>
+            <field name="binding_model_id" ref="model_silina_student"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="report_card_detailed_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="student">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <!-- Version détaillée avec graphiques et statistiques -->
+                            <h2 class="text-center">BULLETIN DE NOTES DÉTAILLÉ</h2>
+                            <p class="text-center">Année scolaire: <span t-field="student.academic_year_id.name"/></p>
+                            <!-- Contenu détaillé ici -->
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>
