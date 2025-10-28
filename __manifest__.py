@@ -6,7 +6,7 @@
     'description': """
         SILINA-EDU - Système de Gestion Scolaire Intégré
         =================================================
-
+        
         Fonctionnalités principales:
         * Gestion des étudiants et parents/tuteurs
         * Gestion des classes et niveaux (Primaire, Collège, Lycée)
