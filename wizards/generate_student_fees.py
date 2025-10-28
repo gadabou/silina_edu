@@ -156,13 +156,13 @@ class GenerateStudentFees(models.TransientModel):
                         'student_id': student.id,
                         'fee_type_id': fee_type.id,
                         'academic_year_id': self.academic_year_id.id,
-                        'amount': fee_type.amount,
+                        'amount': fee_type.total_amount,
                         'due_date': self.due_date,
                         'state': 'confirmed',
                     }
 
                     # Gestion des tranches
-                    if fee_type.allow_installment and fee_type.installment_count > 1:
+                    if fee_type.installment_count > 1:
                         fee_vals['installment_count'] = fee_type.installment_count
 
                     fee = self.env['silina.student.fee'].create(fee_vals)
@@ -213,7 +213,7 @@ class GenerateStudentFees(models.TransientModel):
 
                 if not existing or self.allow_duplicate:
                     total_fees += 1
-                    total_amount += fee_type.amount
+                    total_amount += fee_type.total_amount
 
         message = _(
             'Aperçu:\n\n'

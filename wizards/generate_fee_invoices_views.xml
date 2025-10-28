@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_generate_fee_invoices_wizard_form" model="ir.ui.view">
+            <field name="name">silina.generate.fee.invoices.wizard.form</field>
+            <field name="model">silina.generate.fee.invoices.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Générer les Factures">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="fee_type_id" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="academic_year_id"
+                                       options="{'no_create': True}"/>
+                                <field name="generation_mode" widget="radio"/>
+                                <field name="start_date"/>
+                            </group>
+                            <group>
+                                <field name="partner_id"
+                                       options="{'no_create': True}"
+                                       placeholder="Contact par défaut (optionnel)"/>
+                                <field name="student_count"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="classroom_ids"
+                                   invisible="generation_mode != 'classroom'"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="student_ids"
+                                   invisible="generation_mode != 'student'"
+                                   widget="many2many_tags"
+                                   domain="[('state', '=', 'enrolled')]"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Générer les Factures"
+                                name="action_generate_invoices"
+                                type="object"
+                                class="btn-primary"/>
+                        <button string="Annuler"
+                                class="btn-secondary"
+                                special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_generate_fee_invoices_wizard" model="ir.actions.act_window">
+            <field name="name">Générer les Factures</field>
+            <field name="res_model">silina.generate.fee.invoices.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

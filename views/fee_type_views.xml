@@ -3,6 +3,23 @@
     <data>
 
         <!-- Fee Type Views -->
+        <!-- Vue tree pour les tranches dans fee_type -->
+        <record id="view_fee_type_installment_tree" model="ir.ui.view">
+            <field name="name">silina.fee.type.installment.tree</field>
+            <field name="model">silina.fee.type.installment</field>
+            <field name="arch" type="xml">
+                <list string="Tranches" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="amount"/>
+                    <field name="due_date_type"/>
+                    <field name="due_date" invisible="due_date_type != 'fixed'"/>
+                    <field name="due_days" invisible="due_date_type != 'relative'"/>
+                    <field name="description" optional="hide"/>
+                </list>
+            </field>
+        </record>
+
         <record id="view_fee_type_tree" model="ir.ui.view">
             <field name="name">silina.fee.type.tree</field>
             <field name="model">silina.fee.type</field>
@@ -12,9 +29,10 @@
                     <field name="name"/>
                     <field name="code"/>
                     <field name="fee_category"/>
-                    <field name="amount"/>
+                    <field name="total_amount"/>
+                    <field name="installment_count"/>
+                    <field name="academic_year_id"/>
                     <field name="is_mandatory"/>
-                    <field name="allow_installment"/>
                 </list>
             </field>
         </record>
@@ -24,22 +42,67 @@
             <field name="model">silina.fee.type</field>
             <field name="arch" type="xml">
                 <form string="Type de Frais">
+                    <header>
+                        <button name="action_generate_invoices"
+                                string="Générer les Factures"
+                                type="object"
+                                class="btn-primary"
+                                invisible="not installment_ids"/>
+                    </header>
                     <sheet>
                         <group>
                             <group>
                                 <field name="name"/>
                                 <field name="code"/>
                                 <field name="fee_category"/>
-                                <field name="amount"/>
                             </group>
                             <group>
+                                <field name="total_amount"/>
+                                <field name="academic_year_id"
+                                       options="{'no_create': True}"/>
                                 <field name="is_mandatory"/>
-                                <field name="allow_installment"/>
-                                <field name="installment_count" invisible="not allow_installment"/>
                                 <field name="sequence"/>
                             </group>
                         </group>
-                        <field name="description"/>
+                        <notebook>
+                            <page string="Tranches de Paiement" name="installments">
+                                <field name="installment_ids"
+                                       context="{'tree_view_ref': 'silina_edu.view_fee_type_installment_tree'}">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                        <field name="amount"/>
+                                        <field name="due_date_type"/>
+                                        <field name="due_date" invisible="due_date_type != 'fixed'" required="due_date_type == 'fixed'"/>
+                                        <field name="due_days" invisible="due_date_type != 'relative'" required="due_date_type == 'relative'"/>
+                                    </list>
+                                </field>
+                                <group>
+                                    <field name="installment_count" readonly="1"/>
+                                </group>
+                            </page>
+                            <page string="Applicabilité" name="applicability">
+                                <group>
+                                    <field name="level_ids" widget="many2many_tags"
+                                           options="{'no_create': True}"/>
+                                </group>
+                            </page>
+                            <page string="Facturation" name="invoicing">
+                                <group>
+                                    <group>
+                                        <field name="product_id"
+                                               options="{'no_create': True}"/>
+                                    </group>
+                                    <group>
+                                        <field name="account_id"
+                                               options="{'no_create': True}"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Description" name="description">
+                                <field name="description"/>
+                            </page>
+                        </notebook>
                     </sheet>
                 </form>
             </field>
