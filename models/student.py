@@ -5,7 +5,7 @@ from datetime import date
 
 class Student(models.Model):
     _name = 'silina.student'
-    _description = 'Étudiant'
+    _description = 'Élève'
     _order = 'name'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
@@ -268,7 +268,7 @@ class Student(models.Model):
     def action_enroll(self):
         self.ensure_one()
         if not self.classroom_id:
-            raise ValidationError(_('Veuillez assigner une classe à l\'étudiant avant de l\'inscrire!'))
+            raise ValidationError(_('Veuillez assigner une classe à l\'élève avant de l\'inscrire!'))
         self.state = 'enrolled'
         return True
 

@@ -2,9 +2,9 @@
 <odoo>
     <data noupdate="1">
 
-        <!-- Séquence pour les étudiants -->
+        <!-- Séquence pour les élèves -->
         <record id="sequence_student" model="ir.sequence">
-            <field name="name">Matricule Étudiant</field>
+            <field name="name">Matricule Élève</field>
             <field name="code">silina.student</field>
             <field name="prefix">STU</field>
             <field name="padding">5</field>
@@ -20,9 +20,9 @@
             <field name="company_id" eval="False"/>
         </record>
 
-        <!-- Séquence pour les frais étudiants -->
+        <!-- Séquence pour les frais élèves -->
         <record id="sequence_student_fee" model="ir.sequence">
-            <field name="name">Référence Frais Étudiant</field>
+            <field name="name">Référence Frais Élève</field>
             <field name="code">silina.student.fee</field>
             <field name="prefix">FEE</field>
             <field name="padding">5</field>

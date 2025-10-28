@@ -4,7 +4,7 @@ from odoo.exceptions import ValidationError
 
 class GenerateStudentFees(models.TransientModel):
     _name = 'silina.generate.student.fees.wizard'
-    _description = 'Assistant de Génération de Frais Étudiants'
+    _description = 'Assistant de Génération de Frais Élèves'
 
     academic_year_id = fields.Many2one(
         'silina.academic.year',
@@ -16,7 +16,7 @@ class GenerateStudentFees(models.TransientModel):
     generation_type = fields.Selection([
         ('level', 'Par niveau'),
         ('classroom', 'Par classe'),
-        ('student', 'Par étudiant'),
+        ('student', 'Par élève'),
     ], string='Type de génération', default='classroom', required=True)
 
     level_ids = fields.Many2many(
@@ -41,7 +41,7 @@ class GenerateStudentFees(models.TransientModel):
         'generate_fees_student_rel',
         'wizard_id',
         'student_id',
-        string='Étudiants',
+        string='Élèves',
         domain="[('academic_year_id', '=', academic_year_id)]"
     )
 
@@ -52,7 +52,7 @@ class GenerateStudentFees(models.TransientModel):
         'fee_type_id',
         string='Types de frais',
         required=True,
-        help="Frais à générer pour les étudiants sélectionnés"
+        help="Frais à générer pour les élèves sélectionnés"
     )
 
     due_date = fields.Date(
@@ -63,11 +63,11 @@ class GenerateStudentFees(models.TransientModel):
     allow_duplicate = fields.Boolean(
         string='Autoriser les doublons',
         default=False,
-        help="Générer même si les frais existent déjà pour certains étudiants"
+        help="Générer même si les frais existent déjà pour certains élèves"
     )
 
     student_count = fields.Integer(
-        string='Nombre d\'étudiants',
+        string='Nombre d\'élèves',
         compute='_compute_student_count'
     )
 
@@ -96,7 +96,7 @@ class GenerateStudentFees(models.TransientModel):
 
     @api.onchange('classroom_ids')
     def _onchange_classroom_ids(self):
-        """Charger les étudiants des classes"""
+        """Charger les élèves des classes"""
         if self.classroom_ids:
             students = self.env['silina.student'].search([
                 ('classroom_id', 'in', self.classroom_ids.ids),
@@ -105,7 +105,7 @@ class GenerateStudentFees(models.TransientModel):
             self.student_ids = students
 
     def _get_students(self):
-        """Obtenir la liste des étudiants selon le type de génération"""
+        """Obtenir la liste des élèves selon le type de génération"""
         self.ensure_one()
 
         if self.generation_type == 'level':
@@ -123,7 +123,7 @@ class GenerateStudentFees(models.TransientModel):
             return self.student_ids
 
     def action_generate(self):
-        """Générer les frais pour les étudiants sélectionnés"""
+        """Générer les frais pour les élèves sélectionnés"""
         self.ensure_one()
 
         if not self.fee_type_ids:
@@ -131,7 +131,7 @@ class GenerateStudentFees(models.TransientModel):
 
         students = self._get_students()
         if not students:
-            raise ValidationError(_('Aucun étudiant sélectionné!'))
+            raise ValidationError(_('Aucun élève sélectionné!'))
 
         created_count = 0
         skipped_count = 0
@@ -197,7 +197,7 @@ class GenerateStudentFees(models.TransientModel):
 
         students = self._get_students()
         if not students:
-            raise ValidationError(_('Aucun étudiant sélectionné!'))
+            raise ValidationError(_('Aucun élève sélectionné!'))
 
         # Compter les frais qui seront créés
         total_fees = 0
@@ -217,7 +217,7 @@ class GenerateStudentFees(models.TransientModel):
 
         message = _(
             'Aperçu:\n\n'
-            '- Nombre d\'étudiants: %s\n'
+            '- Nombre d\'élèves: %s\n'
             '- Types de frais: %s\n'
             '- Nombre de frais à créer: %s\n'
             '- Montant total: %s'

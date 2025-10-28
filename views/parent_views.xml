@@ -63,7 +63,7 @@
                             <field name="can_pickup"/>
                         </group>
                         <notebook>
-                            <page string="Étudiants">
+                            <page string="Élèves">
                                 <field name="student_ids" widget="many2many" context="{'tree_view_ref': 'silina_edu.view_silina_student_tree_for_student_ids'}"/>
                             </page>
                         </notebook>

@@ -6,22 +6,17 @@ class GenerateReportCard(models.TransientModel):
     _name = 'silina.generate.report.card.wizard'
     _description = 'Assistant de Génération de Bulletin de Notes'
 
-    exam_id = fields.Many2one(
-        'silina.exam',
-        string='Examen',
-        required=True,
-        domain="[('state', '=', 'completed')]"
-    )
-
     academic_year_id = fields.Many2one(
-        related='exam_id.academic_year_id',
+        'silina.academic.year',
         string='Année Scolaire',
-        readonly=True
+        required=True,
+        default=lambda self: self.env['silina.academic.year'].get_current_year(),
+        help="Sélectionnez l'année scolaire pour laquelle générer les bulletins"
     )
 
     generation_type = fields.Selection([
         ('classroom', 'Par classe'),
-        ('student', 'Par étudiant'),
+        ('student', 'Par élève'),
     ], string='Type de génération', default='classroom', required=True)
 
     classroom_ids = fields.Many2many(
@@ -38,7 +33,7 @@ class GenerateReportCard(models.TransientModel):
         'report_card_student_rel',
         'wizard_id',
         'student_id',
-        string='Étudiants'
+        string='Élèves'
     )
 
     template_type = fields.Selection([
@@ -50,7 +45,7 @@ class GenerateReportCard(models.TransientModel):
     include_rank = fields.Boolean(
         string='Inclure le rang',
         default=True,
-        help="Afficher le rang de l'étudiant dans sa classe"
+        help="Afficher le rang de l'élève dans sa classe"
     )
 
     include_statistics = fields.Boolean(
@@ -80,7 +75,7 @@ class GenerateReportCard(models.TransientModel):
 
     @api.onchange('classroom_ids')
     def _onchange_classroom_ids(self):
-        """Charger automatiquement les étudiants des classes sélectionnées"""
+        """Charger automatiquement les élèves des classes sélectionnées"""
         if self.generation_type == 'classroom' and self.classroom_ids:
             students = self.env['silina.student'].search([
                 ('classroom_id', 'in', self.classroom_ids.ids),
@@ -92,7 +87,7 @@ class GenerateReportCard(models.TransientModel):
         """Générer les résumés d'examen si pas déjà fait"""
         self.ensure_one()
 
-        # Récupérer tous les étudiants concernés
+        # Récupérer tous les élèves concernés
         if self.generation_type == 'classroom':
             students = self.env['silina.student'].search([
                 ('classroom_id', 'in', self.classroom_ids.ids)
@@ -101,33 +96,56 @@ class GenerateReportCard(models.TransientModel):
             students = self.student_ids
 
         if not students:
-            raise ValidationError(_('Aucun étudiant sélectionné!'))
+            raise ValidationError(_('Aucun élève sélectionné!'))
 
-        # Générer les résumés
+        # Récupérer tous les examens de l'année scolaire où les élèves ont des résultats
+        exams = self.env['silina.exam'].search([
+            ('academic_year_id', '=', self.academic_year_id.id),
+            ('state', 'in', ['in_progress', 'completed'])
+        ])
+
+        # Filtrer pour ne garder que les examens où au moins un élève a des résultats
+        exam_ids_with_results = self.env['silina.exam.result'].search([
+            ('exam_id', 'in', exams.ids),
+            ('student_id', 'in', students.ids)
+        ]).mapped('exam_id')
+
+        if not exam_ids_with_results:
+            raise ValidationError(_('Aucun résultat trouvé pour les élèves sélectionnés dans cette année scolaire!'))
+
+        # Générer les résumés pour chaque examen
         summary_model = self.env['silina.exam.result.summary']
-        for student in students:
-            # Vérifier si un résumé existe déjà
-            existing = summary_model.search([
-                ('exam_id', '=', self.exam_id.id),
-                ('student_id', '=', student.id)
-            ])
+        for exam in exam_ids_with_results:
+            for student in students:
+                # Vérifier si l'élève a des résultats pour cet examen
+                has_results = self.env['silina.exam.result'].search_count([
+                    ('exam_id', '=', exam.id),
+                    ('student_id', '=', student.id)
+                ])
 
-            if not existing:
-                # Créer le résumé
-                summary_model.create({
-                    'exam_id': self.exam_id.id,
-                    'student_id': student.id,
-                })
+                if has_results:
+                    # Vérifier si un résumé existe déjà
+                    existing = summary_model.search([
+                        ('exam_id', '=', exam.id),
+                        ('student_id', '=', student.id)
+                    ])
 
-        # Calculer les rangs par classe
-        for classroom in students.mapped('classroom_id'):
-            classroom_summaries = summary_model.search([
-                ('exam_id', '=', self.exam_id.id),
-                ('classroom_id', '=', classroom.id)
-            ])
-            sorted_summaries = classroom_summaries.sorted(key=lambda s: s.average, reverse=True)
-            for rank, summary in enumerate(sorted_summaries, 1):
-                summary.rank = rank
+                    if not existing:
+                        # Créer le résumé
+                        summary_model.create({
+                            'exam_id': exam.id,
+                            'student_id': student.id,
+                        })
+
+            # Calculer les rangs par classe pour cet examen
+            for classroom in students.mapped('classroom_id'):
+                classroom_summaries = summary_model.search([
+                    ('exam_id', '=', exam.id),
+                    ('classroom_id', '=', classroom.id)
+                ])
+                sorted_summaries = classroom_summaries.sorted(key=lambda s: s.average, reverse=True)
+                for rank, summary in enumerate(sorted_summaries, 1):
+                    summary.rank = rank
 
         return True
 
@@ -138,22 +156,22 @@ class GenerateReportCard(models.TransientModel):
         # Générer les résumés d'abord
         self.action_generate_summaries()
 
-        # Prendre le premier étudiant pour la prévisualisation
+        # Prendre le premier élève pour la prévisualisation
         student = self.student_ids[0] if self.student_ids else False
         if not student:
-            raise ValidationError(_('Aucun étudiant sélectionné!'))
+            raise ValidationError(_('Aucun élève sélectionné!'))
 
         return self._generate_report([student.id])
 
     def action_generate(self):
-        """Générer les bulletins pour tous les étudiants sélectionnés"""
+        """Générer les bulletins pour tous les élèves sélectionnés"""
         self.ensure_one()
 
         # Générer les résumés d'abord
         self.action_generate_summaries()
 
         if not self.student_ids:
-            raise ValidationError(_('Aucun étudiant sélectionné!'))
+            raise ValidationError(_('Aucun élève sélectionné!'))
 
         return self._generate_report(self.student_ids.ids)
 
@@ -171,7 +189,7 @@ class GenerateReportCard(models.TransientModel):
 
         # Préparer le contexte
         context = {
-            'exam_id': self.exam_id.id,
+            'academic_year_id': self.academic_year_id.id,
             'include_rank': self.include_rank,
             'include_statistics': self.include_statistics,
             'include_comments': self.include_comments,

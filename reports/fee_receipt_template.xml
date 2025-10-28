@@ -34,7 +34,7 @@
                             </div>
 
                             <div class="mt-4">
-                                <h5>Informations Étudiant</h5>
+                                <h5>Informations Élève</h5>
                                 <p><strong>Nom:</strong> <span t-field="payment.student_id.name"/></p>
                                 <p><strong>Matricule:</strong> <span t-field="payment.student_id.registration_number"/></p>
                                 <p><strong>Classe:</strong> <span t-field="payment.student_id.classroom_id.name"/></p>

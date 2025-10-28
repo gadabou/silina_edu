@@ -19,7 +19,7 @@ class FeePayment(models.Model):
 
     student_id = fields.Many2one(
         'silina.student',
-        string='Étudiant',
+        string='Élève',
         required=True,
         tracking=True
     )

@@ -53,16 +53,16 @@ class Parent(models.Model):
     work_phone = fields.Char(string='Téléphone professionnel')
     work_email = fields.Char(string='Email professionnel')
 
-    # Étudiants
+    # Élèves
     student_ids = fields.Many2many(
         'silina.student',
         'student_parent_rel',
         'parent_id',
         'student_id',
-        string='Étudiants'
+        string='Élèves'
     )
     student_count = fields.Integer(
-        string='Nombre d\'étudiants',
+        string='Nombre d\'élèves',
         compute='_compute_student_count'
     )
 
@@ -103,7 +103,7 @@ class Parent(models.Model):
     def action_view_students(self):
         self.ensure_one()
         return {
-            'name': _('Étudiants'),
+            'name': _('Élèves'),
             'type': 'ir.actions.act_window',
             'res_model': 'silina.student',
             'view_mode': 'list,form',

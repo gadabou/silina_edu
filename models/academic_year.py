@@ -45,7 +45,7 @@ class AcademicYear(models.Model):
 
     # Compteurs
     student_count = fields.Integer(
-        string='Nombre d\'étudiants',
+        string='Nombre d\'élèves',
         compute='_compute_counts'
     )
     classroom_count = fields.Integer(

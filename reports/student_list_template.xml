@@ -3,7 +3,7 @@
     <data>
 
         <record id="action_report_student_list" model="ir.actions.report">
-            <field name="name">Liste des Étudiants</field>
+            <field name="name">Liste des Élèves</field>
             <field name="model">silina.student</field>
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">silina_edu.report_student_list_document</field>

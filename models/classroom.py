@@ -52,7 +52,7 @@ class Classroom(models.Model):
     capacity = fields.Integer(
         string='Capacité',
         default=30,
-        help="Nombre maximum d'étudiants"
+        help="Nombre maximum d'élèves"
     )
 
     room = fields.Char(
@@ -60,14 +60,14 @@ class Classroom(models.Model):
         tracking=True
     )
 
-    # Étudiants
+    # Élèves
     student_ids = fields.One2many(
         'silina.student',
         'classroom_id',
-        string='Étudiants'
+        string='Élèves'
     )
     student_count = fields.Integer(
-        string='Nombre d\'étudiants',
+        string='Nombre d\'élèves',
         compute='_compute_student_count',
         store=True
     )
@@ -97,7 +97,7 @@ class Classroom(models.Model):
         for record in self:
             if record.capacity > 0 and record.student_count > record.capacity:
                 raise ValidationError(_(
-                    'Le nombre d\'étudiants (%s) dépasse la capacité de la classe (%s)!'
+                    'Le nombre d\'élèves (%s) dépasse la capacité de la classe (%s)!'
                 ) % (record.student_count, record.capacity))
 
     @api.depends('name', 'level_id', 'academic_year_id')
@@ -111,7 +111,7 @@ class Classroom(models.Model):
     def action_view_students(self):
         self.ensure_one()
         return {
-            'name': _('Étudiants'),
+            'name': _('Élèves'),
             'type': 'ir.actions.act_window',
             'res_model': 'silina.student',
             'view_mode': 'list,form',

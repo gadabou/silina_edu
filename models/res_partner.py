@@ -4,14 +4,14 @@ from odoo import models, fields, api, _
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    is_student = fields.Boolean(string='Est un étudiant')
+    is_student = fields.Boolean(string='Est un élève')
     is_parent = fields.Boolean(string='Est un parent')
     is_teacher = fields.Boolean(string='Est un enseignant')
 
     silina_student_id = fields.Many2one(
         'silina.student',
-        string='Étudiant lié',
-        help="Étudiant lié à ce contact"
+        string='Élève lié',
+        help="Élève lié à ce contact"
     )
 
     silina_parent_id = fields.Many2one(

@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 class StudentFee(models.Model):
     _name = 'silina.student.fee'
-    _description = 'Frais d\'Étudiant'
+    _description = 'Frais d\'Élève'
     _order = 'academic_year_id desc, student_id, fee_type_id'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
@@ -20,7 +20,7 @@ class StudentFee(models.Model):
 
     student_id = fields.Many2one(
         'silina.student',
-        string='Étudiant',
+        string='Élève',
         required=True,
         ondelete='cascade',
         tracking=True
@@ -120,7 +120,7 @@ class StudentFee(models.Model):
 
     _sql_constraints = [
         ('fee_unique', 'unique(student_id, fee_type_id, academic_year_id)',
-         'Ces frais existent déjà pour cet étudiant cette année!'),
+         'Ces frais existent déjà pour cet élève cette année!'),
     ]
 
     @api.depends('payment_ids', 'payment_ids.amount', 'payment_ids.state')
@@ -218,7 +218,7 @@ class StudentFee(models.Model):
 
         if not partner:
             raise ValidationError(_(
-                'Aucun parent avec un contact financier n\'a été trouvé pour cet étudiant!'
+                'Aucun parent avec un contact financier n\'a été trouvé pour cet élève!'
             ))
 
         # Créer la facture

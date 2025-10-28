@@ -18,7 +18,7 @@ class ExamResult(models.Model):
 
     student_id = fields.Many2one(
         'silina.student',
-        string='Étudiant',
+        string='Élève',
         required=True,
         ondelete='cascade',
         tracking=True
@@ -110,7 +110,7 @@ class ExamResult(models.Model):
 
     _sql_constraints = [
         ('result_unique', 'unique(exam_id, student_id, subject_id)',
-         'Un résultat existe déjà pour cet examen, étudiant et matière!'),
+         'Un résultat existe déjà pour cet examen, élève et matière!'),
     ]
 
     @api.constrains('marks_obtained', 'total_marks')
@@ -176,7 +176,7 @@ class ExamResult(models.Model):
 
 
 class ExamResultSummary(models.Model):
-    """Modèle pour calculer les moyennes générales par examen et étudiant"""
+    """Modèle pour calculer les moyennes générales par examen et élève"""
     _name = 'silina.exam.result.summary'
     _description = 'Résumé des Résultats d\'Examen'
     _order = 'exam_id, classroom_id, rank'
@@ -191,7 +191,7 @@ class ExamResultSummary(models.Model):
 
     student_id = fields.Many2one(
         'silina.student',
-        string='Étudiant',
+        string='Élève',
         required=True,
         ondelete='cascade'
     )
@@ -255,7 +255,7 @@ class ExamResultSummary(models.Model):
 
     rank = fields.Integer(
         string='Rang',
-        help="Rang de l'étudiant dans sa classe"
+        help="Rang de l'élève dans sa classe"
     )
 
     result_ids = fields.One2many(
@@ -266,7 +266,7 @@ class ExamResultSummary(models.Model):
 
     _sql_constraints = [
         ('summary_unique', 'unique(exam_id, student_id)',
-         'Un résumé existe déjà pour cet examen et étudiant!'),
+         'Un résumé existe déjà pour cet examen et élève!'),
     ]
 
     def _compute_result_ids(self):
@@ -329,7 +329,7 @@ class ExamResultSummary(models.Model):
 
     @api.model
     def generate_summaries(self, exam_id):
-        """Générer les résumés pour tous les étudiants d'un examen"""
+        """Générer les résumés pour tous les élèves d'un examen"""
         exam = self.env['silina.exam'].browse(exam_id)
         students = self.env['silina.exam.result'].search([
             ('exam_id', '=', exam_id),

@@ -8,13 +8,13 @@
         =================================================
         
         Fonctionnalités principales:
-        * Gestion des étudiants et parents/tuteurs
+        * Gestion des élèves et parents/tuteurs
         * Gestion des classes et niveaux (Primaire, Collège, Lycée)
         * Gestion des enseignants et matières
         * Gestion des examens et résultats
         * Génération automatique des bulletins de notes (plusieurs modèles)
         * Gestion des frais scolaires avec paiements par tranches
-        * Gestion des documents étudiants
+        * Gestion des documents élèves
         * Passage en masse des élèves en classe supérieure
         * Intégration avec la facturation pour les frais scolaires
         * Intégration avec Point de Vente pour articles scolaires

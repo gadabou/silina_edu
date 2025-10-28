@@ -52,7 +52,7 @@ class FeeType(models.Model):
     is_mandatory = fields.Boolean(
         string='Obligatoire',
         default=True,
-        help="Si coché, ces frais seront automatiquement ajoutés à tous les étudiants"
+        help="Si coché, ces frais seront automatiquement ajoutés à tous les élèves"
     )
 
     allow_installment = fields.Boolean(

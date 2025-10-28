@@ -8,12 +8,16 @@
             <field name="model">silina.bulk.student.promotion.line</field>
             <field name="arch" type="xml">
                 <list editable="bottom">
-                    <field name="student_id"/>
-                    <field name="current_classroom_id"/>
-                    <field name="current_level_id"/>
-                    <field name="new_level_id"/>
-                    <field name="new_classroom_id"/>
-                    <field name="state"/>
+                    <field name="student_id" readonly="1"/>
+                    <field name="current_classroom_id" readonly="1"/>
+                    <field name="current_level_id" readonly="1"/>
+                    <field name="new_level_id" readonly="1"/>
+                    <field name="wizard_id" column_invisible="1"/>
+                    <field name="new_classroom_id"
+                           required="1"
+                           placeholder="Sélectionner la classe..."/>
+                    <field name="state" readonly="1"/>
+                    <field name="error_message" readonly="1" optional="hide"/>
                 </list>
             </field>
         </record>

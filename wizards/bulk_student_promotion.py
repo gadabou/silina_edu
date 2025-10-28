@@ -4,7 +4,7 @@ from odoo.exceptions import ValidationError
 
 class BulkStudentPromotion(models.TransientModel):
     _name = 'silina.bulk.student.promotion.wizard'
-    _description = 'Assistant de Passage en Masse des Étudiants'
+    _description = 'Assistant de Passage en Masse des Élèves'
 
     current_academic_year_id = fields.Many2one(
         'silina.academic.year',
@@ -17,7 +17,7 @@ class BulkStudentPromotion(models.TransientModel):
         'silina.academic.year',
         string='Nouvelle année scolaire',
         required=True,
-        help="Année scolaire vers laquelle promouvoir les étudiants"
+        help="Année scolaire vers laquelle promouvoir les élèves"
     )
 
     current_classroom_ids = fields.Many2many(
@@ -27,12 +27,12 @@ class BulkStudentPromotion(models.TransientModel):
         'classroom_id',
         string='Classes actuelles',
         domain="[('academic_year_id', '=', current_academic_year_id)]",
-        help="Sélectionnez les classes dont vous voulez promouvoir les étudiants"
+        help="Sélectionnez les classes dont vous voulez promouvoir les élèves"
     )
 
     promotion_type = fields.Selection([
-        ('passed', 'Étudiants admis uniquement'),
-        ('all', 'Tous les étudiants'),
+        ('passed', 'Élèves admis uniquement'),
+        ('all', 'Tous les élèves'),
         ('manual', 'Sélection manuelle'),
     ], string='Type de promotion', default='passed', required=True)
 
@@ -41,12 +41,12 @@ class BulkStudentPromotion(models.TransientModel):
         'promotion_student_rel',
         'wizard_id',
         'student_id',
-        string='Étudiants',
-        help="Étudiants à promouvoir (pour sélection manuelle)"
+        string='Élèves',
+        help="Élèves à promouvoir (pour sélection manuelle)"
     )
 
     student_count = fields.Integer(
-        string='Nombre d\'étudiants',
+        string='Nombre d\'élèves',
         compute='_compute_student_count'
     )
 
@@ -80,7 +80,7 @@ class BulkStudentPromotion(models.TransientModel):
 
     @api.onchange('current_classroom_ids', 'promotion_type')
     def _onchange_classrooms(self):
-        """Charger automatiquement les étudiants selon le type de promotion"""
+        """Charger automatiquement les élèves selon le type de promotion"""
         if not self.current_classroom_ids:
             self.student_ids = False
             return
@@ -101,7 +101,7 @@ class BulkStudentPromotion(models.TransientModel):
         self.ensure_one()
 
         if not self.student_ids:
-            raise ValidationError(_('Aucun étudiant sélectionné pour la promotion!'))
+            raise ValidationError(_('Aucun élève sélectionné pour la promotion!'))
 
         # Créer les lignes de promotion
         self.line_ids.unlink()
@@ -158,7 +158,7 @@ class BulkStudentPromotion(models.TransientModel):
                     errors.append(f"{line.student_id.name}: Aucune classe de destination")
                     continue
 
-                # Créer le nouvel enregistrement étudiant pour la nouvelle année
+                # Créer le nouvel enregistrement élève pour la nouvelle année
                 new_student_vals = {
                     'first_name': line.student_id.first_name,
                     'last_name': line.student_id.last_name,
@@ -194,7 +194,7 @@ class BulkStudentPromotion(models.TransientModel):
 
                 new_student = self.env['silina.student'].create(new_student_vals)
 
-                # Marquer l'ancien étudiant comme promu/gradué
+                # Marquer l'ancien élève comme promu/gradué
                 if line.new_level_id:
                     line.student_id.state = 'promoted'
                 else:
@@ -211,7 +211,7 @@ class BulkStudentPromotion(models.TransientModel):
         self.state = 'done'
 
         # Afficher un message de résultat
-        message = _('%s étudiants ont été promus avec succès.') % promoted_count
+        message = _('%s élèves ont été promus avec succès.') % promoted_count
         if errors:
             message += '\n\n' + _('Erreurs:') + '\n' + '\n'.join(errors)
 
@@ -244,7 +244,7 @@ class BulkStudentPromotion(models.TransientModel):
 
 class BulkStudentPromotionLine(models.TransientModel):
     _name = 'silina.bulk.student.promotion.line'
-    _description = 'Ligne de Promotion d\'Étudiant'
+    _description = 'Ligne de Promotion d\'Élève'
 
     wizard_id = fields.Many2one(
         'silina.bulk.student.promotion.wizard',
@@ -255,7 +255,7 @@ class BulkStudentPromotionLine(models.TransientModel):
 
     student_id = fields.Many2one(
         'silina.student',
-        string='Étudiant',
+        string='Élève',
         required=True
     )
 
@@ -280,8 +280,9 @@ class BulkStudentPromotionLine(models.TransientModel):
     new_classroom_id = fields.Many2one(
         'silina.classroom',
         string='Nouvelle classe',
-        required=True,
-        domain="[('level_id', '=', new_level_id), ('academic_year_id', '=', wizard_id.new_academic_year_id)]"
+        required=False,
+        domain="[('level_id', '=', new_level_id)]",
+        help="Sélectionnez la classe de destination pour cet élève"
     )
 
     state = fields.Selection([

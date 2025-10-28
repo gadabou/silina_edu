@@ -144,6 +144,15 @@ class Exam(models.Model):
         self.state = 'completed'
         return True
 
+    def name_get(self):
+        """Afficher le nom avec l'année scolaire et le type pour faciliter la sélection"""
+        result = []
+        for record in self:
+            exam_type_label = dict(record._fields['exam_type'].selection).get(record.exam_type, '')
+            name = f"{record.name} - {exam_type_label} ({record.academic_year_id.name})"
+            result.append((record.id, name))
+        return result
+
     def action_view_results(self):
         self.ensure_one()
         return {

@@ -10,18 +10,26 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="exam_id"/>
-                                <field name="academic_year_id"/>
-                                <field name="generation_type"/>
+                                <field name="academic_year_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       placeholder="Sélectionner l'année scolaire..."/>
+                                <field name="generation_type" widget="radio"/>
                             </group>
                             <group>
-                                <field name="template_type"/>
+                                <field name="template_type" widget="radio"/>
                                 <field name="language"/>
                             </group>
                         </group>
                         <group>
-                            <field name="classroom_ids" invisible="generation_type != 'classroom'" widget="many2many_tags"/>
-                            <field name="student_ids" invisible="generation_type != 'student'" widget="many2many_tags"/>
+                            <field name="classroom_ids"
+                                   invisible="generation_type != 'classroom'"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="student_ids"
+                                   invisible="generation_type != 'student'"
+                                   widget="many2many_tags"
+                                   domain="[('state', '=', 'enrolled')]"
+                                   options="{'no_create': True}"/>
                         </group>
                         <group>
                             <field name="include_rank"/>

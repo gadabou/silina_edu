@@ -54,7 +54,7 @@
             <field name="name">silina.student.tree</field>
             <field name="model">silina.student</field>
             <field name="arch" type="xml">
-                <list string="Étudiants">
+                <list string="Élèves">
                     <field name="registration_number"/>
                     <field name="name"/>
                     <field name="gender"/>
@@ -70,7 +70,7 @@
             <field name="name">silina.student.form</field>
             <field name="model">silina.student</field>
             <field name="arch" type="xml">
-                <form string="Étudiant">
+                <form string="Élève">
                     <header>
                         <button name="action_enroll" string="Inscrire" type="object" invisible="state != 'draft'"/>
                         <button name="action_promote" string="Admettre" type="object" invisible="state != 'enrolled'"/>
@@ -134,7 +134,7 @@
         </record>
 
         <record id="action_student" model="ir.actions.act_window">
-            <field name="name">Étudiants</field>
+            <field name="name">Élèves</field>
             <field name="res_model">silina.student</field>
             <field name="view_mode">list,form</field>
             <field name="target">current</field>
@@ -143,7 +143,7 @@
 
         <!-- Action pour créer en mode modal -->
         <record id="action_student_create" model="ir.actions.act_window">
-            <field name="name">Nouvel Étudiant</field>
+            <field name="name">Nouvel Élève</field>
             <field name="res_model">silina.student</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>

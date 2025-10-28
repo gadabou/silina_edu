@@ -56,7 +56,7 @@
                     <sheet>
                         <div class="oe_button_box" name="button_box">
                             <button name="action_view_students" type="object" class="oe_stat_button" icon="fa-users">
-                                <field name="student_count" widget="statinfo" string="Étudiants"/>
+                                <field name="student_count" widget="statinfo" string="Élèves"/>
                             </button>
                         </div>
                         <group>
@@ -73,7 +73,7 @@
                             </group>
                         </group>
                         <notebook>
-                            <page string="Étudiants">
+                            <page string="Élèves">
                                 <field name="student_ids" widget="many2many" context="{'tree_view_ref': 'silina_edu.view_silina_student_tree_for_student_ids'}"/>
                             </page>
                             <page string="Matières">

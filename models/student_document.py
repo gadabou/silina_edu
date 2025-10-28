@@ -3,7 +3,7 @@ from odoo import models, fields, api, _
 
 class StudentDocument(models.Model):
     _name = 'silina.student.document'
-    _description = 'Document Étudiant'
+    _description = 'Document Élève'
     _order = 'date desc, id desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
@@ -15,7 +15,7 @@ class StudentDocument(models.Model):
 
     student_id = fields.Many2one(
         'silina.student',
-        string='Étudiant',
+        string='Élève',
         required=True,
         ondelete='cascade',
         tracking=True

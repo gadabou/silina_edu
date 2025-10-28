@@ -68,14 +68,14 @@
             action="action_exam_result"
             sequence="4"/>
 
-        <!-- Étudiants -->
+        <!-- Élèves -->
         <menuitem id="menu_silina_edu_students"
-            name="Étudiants"
+            name="Élèves"
             parent="menu_silina_edu_root"
             sequence="20"/>
 
         <menuitem id="menu_student"
-            name="Étudiants"
+            name="Élèves"
             parent="menu_silina_edu_students"
             action="action_student"
             sequence="1"/>
@@ -111,7 +111,7 @@
             sequence="40"/>
 
         <menuitem id="menu_student_fee"
-            name="Frais Étudiants"
+            name="Frais Élèves"
             parent="menu_silina_edu_fees"
             action="action_student_fee"
             sequence="1"/>

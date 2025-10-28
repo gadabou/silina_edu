@@ -50,7 +50,7 @@
         </record>
 
         <record id="action_student_document" model="ir.actions.act_window">
-            <field name="name">Documents Étudiants</field>
+            <field name="name">Documents Élèves</field>
             <field name="res_model">silina.student.document</field>
             <field name="view_mode">list,form</field>
             <field name="target">current</field>

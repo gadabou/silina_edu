@@ -41,9 +41,9 @@
 
         <!-- Règles de sécurité au niveau des enregistrements -->
 
-        <!-- Étudiants -->
+        <!-- Élèves -->
         <record id="silina_student_rule_user" model="ir.rule">
-            <field name="name">Étudiant: Lecture seule pour utilisateur</field>
+            <field name="name">Élève: Lecture seule pour utilisateur</field>
             <field name="model_id" ref="model_silina_student"/>
             <field name="domain_force">[(1,'=',1)]</field>
             <field name="groups" eval="[(4, ref('group_silina_edu_user'))]"/>
@@ -54,7 +54,7 @@
         </record>
 
         <record id="silina_student_rule_coordinator" model="ir.rule">
-            <field name="name">Étudiant: Tous droits pour coordinateur</field>
+            <field name="name">Élève: Tous droits pour coordinateur</field>
             <field name="model_id" ref="model_silina_student"/>
             <field name="domain_force">[(1,'=',1)]</field>
             <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>

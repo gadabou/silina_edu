@@ -37,7 +37,7 @@
                                 <field name="classroom_count" widget="statinfo" string="Classes"/>
                             </button>
                             <button name="%(action_student)d" type="action" class="oe_stat_button" icon="fa-graduation-cap" context="{'search_default_academic_year_id': id}">
-                                <field name="student_count" widget="statinfo" string="Étudiants"/>
+                                <field name="student_count" widget="statinfo" string="Élèves"/>
                             </button>
                         </div>
                         <group>
