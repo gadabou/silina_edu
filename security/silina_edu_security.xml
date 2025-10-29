@@ -76,17 +76,5 @@
             <field name="perm_unlink" eval="False"/>
         </record>
 
-        <!-- Paiements -->
-        <record id="silina_fee_payment_rule_coordinator" model="ir.rule">
-            <field name="name">Paiement: Coordinateur peut tout faire</field>
-            <field name="model_id" ref="model_silina_fee_payment"/>
-            <field name="domain_force">[(1,'=',1)]</field>
-            <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="True"/>
-        </record>
-
     </data>
 </odoo>
