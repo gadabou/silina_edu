@@ -144,81 +144,56 @@ class StudentFeePayment(models.TransientModel):
         return self._generate_receipt(payment, invoice)
 
     def _get_or_create_invoice(self):
-        """Récupérer ou créer la facture appropriée"""
-        # Chercher une facture existante non payée
-        if self.payment_type == 'installment' and self.installment_id:
-            # Chercher la facture de cette tranche spécifique
-            invoice = self.env['account.move'].search([
-                ('partner_id', '=', self.student_id.partner_id.id),
-                ('move_type', '=', 'out_invoice'),
-                ('state', '=', 'posted'),
-                ('payment_state', 'in', ['not_paid', 'partial']),
-                ('invoice_origin', 'ilike', self.installment_id.name),
-            ], limit=1)
+        """Récupérer ou créer la facture appropriée
+        Une seule facture par type de frais et par élève avec toutes les tranches
+        """
+        # Chercher une facture existante pour ce type de frais et cet élève
+        # On cherche une facture qui contient ce produit (type de frais) et qui n'est pas entièrement payée
+        invoice = self.env['account.move'].search([
+            ('partner_id', '=', self.student_id.partner_id.id),
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            ('payment_state', 'in', ['not_paid', 'partial']),
+            ('invoice_line_ids.product_id', '=', self.fee_type_id.product_id.id),
+        ], limit=1)
 
-            if not invoice:
-                # Créer une facture pour cette tranche
-                invoice = self._create_installment_invoice()
-        else:
-            # Paiement complet : vérifier s'il y a des factures impayées
-            invoices = self.env['account.move'].search([
-                ('partner_id', '=', self.student_id.partner_id.id),
-                ('move_type', '=', 'out_invoice'),
-                ('state', '=', 'posted'),
-                ('payment_state', 'in', ['not_paid', 'partial']),
-                ('invoice_line_ids.product_id', '=', self.fee_type_id.product_id.id),
-            ])
-
-            if not invoices:
-                # Créer toutes les factures pour toutes les tranches
-                invoice = self._create_full_invoices()
-            else:
-                invoice = invoices[0]
+        if not invoice:
+            # Créer UNE facture avec TOUTES les tranches en lignes distinctes
+            invoice = self._create_fee_invoice()
 
         return invoice
 
-    def _create_installment_invoice(self):
-        """Créer une facture pour une tranche spécifique"""
+    def _create_fee_invoice(self):
+        """Créer UNE SEULE facture avec toutes les tranches en lignes distinctes"""
+        # Préparer les lignes de facture pour chaque tranche
+        invoice_lines = []
+        first_due_date = False
+
+        for installment in self.fee_type_id.installment_ids:
+            # Garder la date d'échéance de la première tranche
+            if not first_due_date and installment.due_date_type == 'fixed':
+                first_due_date = installment.due_date
+
+            invoice_lines.append((0, 0, {
+                'product_id': self.fee_type_id.product_id.id,
+                'name': f"{self.fee_type_id.name} - {installment.name}\nÉlève: {self.student_id.name}\nMatricule: {self.student_id.registration_number}\nClasse: {self.student_id.classroom_id.name if self.student_id.classroom_id else 'N/A'}",
+                'quantity': 1,
+                'price_unit': installment.amount,
+            }))
+
+        # Créer UNE facture avec toutes les lignes
         invoice_vals = {
             'move_type': 'out_invoice',
             'partner_id': self.student_id.partner_id.id,
             'invoice_date': fields.Date.today(),
-            'invoice_date_due': self.installment_id.due_date if self.installment_id.due_date_type == 'fixed' else fields.Date.today(),
-            'invoice_origin': f"{self.fee_type_id.name} - {self.installment_id.name}",
-            'invoice_line_ids': [(0, 0, {
-                'product_id': self.fee_type_id.product_id.id,
-                'name': f"{self.fee_type_id.name} - {self.installment_id.name}\nÉlève: {self.student_id.name}\nMatricule: {self.student_id.registration_number}\nClasse: {self.student_id.classroom_id.name if self.student_id.classroom_id else 'N/A'}",
-                'quantity': 1,
-                'price_unit': self.installment_id.amount,
-            })],
+            'invoice_date_due': first_due_date or fields.Date.today(),
+            'invoice_origin': f"{self.fee_type_id.name} - Année scolaire {self.student_id.academic_year_id.name}",
+            'invoice_line_ids': invoice_lines,
         }
 
         invoice = self.env['account.move'].create(invoice_vals)
         invoice.action_post()
         return invoice
-
-    def _create_full_invoices(self):
-        """Créer toutes les factures pour toutes les tranches"""
-        invoices = self.env['account.move']
-        for installment in self.fee_type_id.installment_ids:
-            invoice_vals = {
-                'move_type': 'out_invoice',
-                'partner_id': self.student_id.partner_id.id,
-                'invoice_date': fields.Date.today(),
-                'invoice_date_due': installment.due_date if installment.due_date_type == 'fixed' else fields.Date.today(),
-                'invoice_origin': f"{self.fee_type_id.name} - {installment.name}",
-                'invoice_line_ids': [(0, 0, {
-                    'product_id': self.fee_type_id.product_id.id,
-                    'name': f"{self.fee_type_id.name} - {installment.name}\nÉlève: {self.student_id.name}\nMatricule: {self.student_id.registration_number}\nClasse: {self.student_id.classroom_id.name if self.student_id.classroom_id else 'N/A'}",
-                    'quantity': 1,
-                    'price_unit': installment.amount,
-                })],
-            }
-            invoice = self.env['account.move'].create(invoice_vals)
-            invoice.action_post()
-            invoices |= invoice
-
-        return invoices[0] if invoices else False
 
     def _register_payment(self, invoice):
         """Enregistrer le paiement sur la facture"""
