@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Hériter du template de facture standard pour personnaliser -->
+        <template id="report_invoice_document_inherit" inherit_id="account.report_invoice_document">
+
+            <!-- Ajouter des styles CSS personnalisés pour les factures d'élèves -->
+            <xpath expr="//t[@t-call='web.external_layout']" position="before">
+                <style>
+                    /* Styles pour améliorer l'affichage PDF */
+                    .page {
+                        font-family: 'DejaVu Sans', Arial, sans-serif;
+                        font-size: 11pt;
+                    }
+
+                    h1, h2, h3, h4, h5, h6 {
+                        color: #2C3E50;
+                        font-weight: bold;
+                    }
+
+                    h2 {
+                        font-size: 18pt;
+                        margin-bottom: 10px;
+                    }
+
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 10px 0;
+                    }
+
+                    table.table-bordered {
+                        border: 1px solid #dee2e6;
+                    }
+
+                    table.table-bordered th,
+                    table.table-bordered td {
+                        border: 1px solid #dee2e6;
+                        padding: 8px;
+                    }
+
+                    thead {
+                        background-color: #f8f9fa !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .table-active {
+                        background-color: #f8f9fa !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .text-right {
+                        text-align: right;
+                    }
+
+                    .text-center {
+                        text-align: center;
+                    }
+
+                    .text-left {
+                        text-align: left;
+                    }
+
+                    .font-weight-bold, strong, b {
+                        font-weight: bold;
+                    }
+
+                    .mt-4 {
+                        margin-top: 1.5rem;
+                    }
+
+                    .mb-4 {
+                        margin-bottom: 1.5rem;
+                    }
+
+                    .row {
+                        display: table;
+                        width: 100%;
+                    }
+
+                    .col-6 {
+                        display: table-cell;
+                        width: 50%;
+                        padding: 5px;
+                    }
+
+                    /* Styles pour les montants */
+                    .monetary {
+                        font-weight: bold;
+                        color: #2C3E50;
+                    }
+
+                    /* Footer de facture */
+                    tfoot {
+                        background-color: #f8f9fa !important;
+                        font-weight: bold;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    /* Informations sur l'élève */
+                    .student-info {
+                        background-color: #f0f0f0 !important;
+                        padding: 10px;
+                        margin: 10px 0;
+                        border-radius: 5px;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                </style>
+            </xpath>
+
+            <!-- Personnaliser l'affichage pour afficher les infos élève si présentes -->
+            <xpath expr="//div[@id='informations']" position="after">
+                <t t-if="o.partner_id.comment and 'Élève' in o.partner_id.comment">
+                    <div class="student-info">
+                        <h5 style="margin-top: 0;">Informations Élève</h5>
+                        <p style="margin: 5px 0;">
+                            <strong>Nom:</strong> <t t-esc="o.partner_id.name"/><br/>
+                            <t t-if="o.partner_id.parent_id">
+                                <strong>Responsable:</strong> <t t-esc="o.partner_id.parent_id.name"/><br/>
+                            </t>
+                        </p>
+                    </div>
+                </t>
+            </xpath>
+        </template>
+
+        <!-- Template personnalisé pour le bulletin de notes standard -->
+        <template id="report_card_standard_enhanced" inherit_id="silina_edu.report_card_standard_document">
+            <xpath expr="//t[@t-call='web.html_container']" position="before">
+                <style>
+                    /* Styles pour le bulletin de notes */
+                    @page {
+                        size: A4 portrait;
+                        margin: 10mm;
+                    }
+
+                    body {
+                        font-family: 'DejaVu Sans', Arial, sans-serif;
+                        font-size: 10pt;
+                    }
+
+                    .header-bulletin {
+                        text-align: center;
+                        border-bottom: 3px solid #2C3E50;
+                        padding-bottom: 10px;
+                        margin-bottom: 15px;
+                    }
+
+                    .header-bulletin h2 {
+                        color: #2C3E50;
+                        font-size: 20pt;
+                        margin: 5px 0;
+                    }
+
+                    .student-header {
+                        background-color: #e9ecef !important;
+                        padding: 10px;
+                        margin: 10px 0;
+                        border-radius: 5px;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .results-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 15px 0;
+                    }
+
+                    .results-table th {
+                        background-color: #2C3E50 !important;
+                        color: white !important;
+                        padding: 8px;
+                        text-align: left;
+                        font-weight: bold;
+                        border: 1px solid #2C3E50;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .results-table td {
+                        padding: 6px 8px;
+                        border: 1px solid #dee2e6;
+                    }
+
+                    .results-table tbody tr:nth-child(even) {
+                        background-color: #f8f9fa !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .summary-box {
+                        background-color: #fff3cd !important;
+                        border: 2px solid #ffc107;
+                        padding: 15px;
+                        margin: 20px 0;
+                        border-radius: 5px;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .signature-section {
+                        margin-top: 40px;
+                        display: table;
+                        width: 100%;
+                    }
+
+                    .signature-box {
+                        display: table-cell;
+                        width: 50%;
+                        text-align: center;
+                        padding: 10px;
+                    }
+
+                    .signature-line {
+                        border-top: 1px solid #000;
+                        width: 150px;
+                        margin: 30px auto 5px;
+                    }
+                </style>
+            </xpath>
+        </template>
+
+        <!-- Template pour liste d'élèves avec styles -->
+        <template id="student_list_document_enhanced" inherit_id="silina_edu.report_student_list_document">
+            <xpath expr="//t[@t-call='web.html_container']" position="before">
+                <style>
+                    /* Styles pour la liste des élèves */
+                    .student-list-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 10px 0;
+                    }
+
+                    .student-list-table thead {
+                        background-color: #2C3E50 !important;
+                        color: white !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .student-list-table th {
+                        padding: 10px;
+                        text-align: left;
+                        font-weight: bold;
+                        border: 1px solid #2C3E50;
+                    }
+
+                    .student-list-table td {
+                        padding: 8px;
+                        border: 1px solid #dee2e6;
+                    }
+
+                    .student-list-table tbody tr:nth-child(odd) {
+                        background-color: #f8f9fa !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .list-header {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #2C3E50;
+                        padding-bottom: 10px;
+                    }
+                </style>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>

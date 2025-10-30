@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Ajouter des styles CSS pour améliorer l'apparence des factures PDF -->
+        <template id="report_invoice_document_enhanced" inherit_id="account.report_invoice_document" priority="50">
+
+            <!-- Ajouter le logo de l'entreprise en haut si absent -->
+            <xpath expr="//div[hasclass('page')]" position="before">
+                <div t-if="o.company_id.logo" style="text-align: center; margin-bottom: 20px;">
+                    <img t-att-src="image_data_uri(o.company_id.logo)"
+                         style="max-height: 120px; max-width: 300px;"
+                         alt="Logo"/>
+                </div>
+            </xpath>
+
+            <!-- Injecter les styles CSS au début de la page -->
+            <xpath expr="//div[hasclass('page')]" position="before">
+                <style type="text/css">
+                    /* Styles de base pour PDF */
+                    body {
+                        font-family: 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif !important;
+                        font-size: 10pt;
+                        line-height: 1.5;
+                        color: #333;
+                    }
+
+                    /* Titres */
+                    h1, h2, h3, h4, h5 {
+                        color: #2C3E50 !important;
+                        font-weight: bold;
+                    }
+
+                    h2 {
+                        font-size: 18pt !important;
+                        border-bottom: 3px solid #3498db !important;
+                        padding-bottom: 8px !important;
+                        margin-bottom: 15px !important;
+                    }
+
+                    /* Tableaux */
+                    table {
+                        width: 100%;
+                        border-collapse: collapse !important;
+                        margin: 15px 0;
+                    }
+
+                    table thead {
+                        background-color: #2C3E50 !important;
+                        color: white !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    table thead th {
+                        padding: 12px 8px !important;
+                        text-align: left;
+                        font-weight: bold !important;
+                        border: 1px solid #2C3E50 !important;
+                        color: white !important;
+                        background-color: #2C3E50 !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    table tbody td {
+                        padding: 8px !important;
+                        border: 1px solid #dee2e6 !important;
+                        vertical-align: top;
+                    }
+
+                    table tbody tr:nth-child(even) {
+                        background-color: #f8f9fa !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* Pied de tableau (totaux) */
+                    table tfoot td {
+                        padding: 10px 8px !important;
+                        border: 1px solid #2C3E50 !important;
+                        font-weight: bold;
+                        background-color: #ecf0f1 !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* Total général */
+                    #total table tr:last-child td {
+                        background-color: #2C3E50 !important;
+                        color: white !important;
+                        font-size: 12pt !important;
+                        padding: 12px !important;
+                        font-weight: bold !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* Lignes de sous-totaux */
+                    .subtotal-line td {
+                        background-color: #ecf0f1 !important;
+                        font-weight: bold !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* Informations de paiement */
+                    .payment_info, #payments_info {
+                        background-color: #d4edda !important;
+                        border: 1px solid #c3e6cb !important;
+                        padding: 15px !important;
+                        margin: 20px 0 !important;
+                        border-radius: 5px;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* Classes utilitaires */
+                    .text-right {
+                        text-align: right !important;
+                    }
+
+                    .text-center {
+                        text-align: center !important;
+                    }
+
+                    .font-weight-bold, strong, b {
+                        font-weight: bold !important;
+                    }
+
+                    /* Éviter les bordures doubles */
+                    table {
+                        border: none !important;
+                    }
+
+                    /* S'assurer que toutes les bordures sont visibles */
+                    td, th {
+                        border: 1px solid #dee2e6 !important;
+                    }
+
+                    /* Style pour le montant dû */
+                    .amount_due_container {
+                        background-color: #fff3cd !important;
+                        border: 2px solid #ffc107 !important;
+                        padding: 15px !important;
+                        margin: 20px 0 !important;
+                        text-align: center;
+                        border-radius: 5px;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* Montant payé */
+                    .payment_done {
+                        background-color: #d4edda !important;
+                        border-color: #28a745 !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                </style>
+            </xpath>
+
+        </template>
+    </data>
+</odoo>

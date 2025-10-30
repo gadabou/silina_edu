@@ -200,11 +200,61 @@ class Student(models.Model):
          'Le numéro de matricule doit être unique!'),
     ]
 
-    @api.depends('first_name', 'last_name')
-    def _compute_name(self):
-        for record in self:
-            if record.first_name and record.last_name:
-                record.name = f"{record.first_name} {record.last_name}"
+    @api.onchange('name')
+    def _onchange_name(self):
+        """Quand on saisit le nom complet, diviser en Nom et Prénom
+        UNIQUEMENT si on tape directement dans le champ Nom complet"""
+        # Ne diviser QUE si le nom complet est différent de "last_name + first_name"
+        # Cela évite de rediviser quand on met à jour depuis _onchange_names()
+        if self.name:
+            # Vérifier si le nom complet correspond déjà à last_name + first_name
+            expected_name = ''
+            if self.last_name and self.first_name:
+                expected_name = f"{self.last_name} {self.first_name}"
+            elif self.last_name:
+                expected_name = self.last_name
+            elif self.first_name:
+                expected_name = self.first_name
+
+            # Si le nom complet est différent de ce qui est attendu,
+            # c'est que l'utilisateur a tapé directement dedans
+            if self.name.strip() != expected_name.strip():
+                # Diviser le nom complet en mots
+                parts = self.name.strip().split()
+                if len(parts) >= 1:
+                    # Le premier mot = Nom (en MAJUSCULES)
+                    self.last_name = parts[0].upper()
+                    # Le reste = Prénom (Capitalize chaque mot)
+                    if len(parts) > 1:
+                        prenom_parts = parts[1:]
+                        self.first_name = ' '.join([word.capitalize() for word in prenom_parts])
+                    else:
+                        self.first_name = ''
+
+    @api.onchange('last_name')
+    def _onchange_last_name(self):
+        """S'assurer que tous les mots du nom sont en MAJUSCULES"""
+        if self.last_name:
+            # Mettre tous les mots du nom en majuscules
+            self.last_name = ' '.join([word.upper() for word in self.last_name.split()])
+
+    @api.onchange('first_name')
+    def _onchange_first_name(self):
+        """S'assurer que tous les mots du prénom sont en Capitalize"""
+        if self.first_name:
+            # Capitaliser chaque mot du prénom
+            self.first_name = ' '.join([word.capitalize() for word in self.first_name.split()])
+
+    @api.onchange('first_name', 'last_name')
+    def _onchange_names(self):
+        """Quand on modifie Nom ou Prénom, mettre à jour le nom complet"""
+        if self.first_name and self.last_name:
+            # Nom complet = NOM + Prénom (Nom toujours en premier)
+            self.name = f"{self.last_name} {self.first_name}"
+        elif self.last_name:
+            self.name = self.last_name
+        elif self.first_name:
+            self.name = self.first_name
 
     @api.depends('date_of_birth')
     def _compute_age(self):
@@ -226,8 +276,32 @@ class Student(models.Model):
                 vals['registration_number'] = self.env['ir.sequence'].next_by_code(
                     'silina.student'
                 ) or _('Nouveau')
+
+            # Formater le nom (tous les mots en MAJUSCULES)
+            if vals.get('last_name'):
+                vals['last_name'] = ' '.join([word.upper() for word in vals['last_name'].split()])
+
+            # Formater le prénom (tous les mots en Capitalize)
+            if vals.get('first_name'):
+                vals['first_name'] = ' '.join([word.capitalize() for word in vals['first_name'].split()])
+
+            # Logique de division du nom complet
+            if vals.get('name') and not (vals.get('first_name') or vals.get('last_name')):
+                parts = vals['name'].strip().split()
+                if len(parts) >= 1:
+                    vals['last_name'] = parts[0].upper()
+                    if len(parts) > 1:
+                        prenom_parts = parts[1:]
+                        vals['first_name'] = ' '.join([word.capitalize() for word in prenom_parts])
+
+            # Mise à jour du nom complet si prénom/nom fournis
             if vals.get('first_name') and vals.get('last_name'):
-                vals['name'] = f"{vals['first_name']} {vals['last_name']}"
+                # Nom complet = NOM + Prénom (Nom toujours en premier)
+                vals['name'] = f"{vals['last_name']} {vals['first_name']}"
+            elif vals.get('last_name'):
+                vals['name'] = vals['last_name']
+            elif vals.get('first_name'):
+                vals['name'] = vals['first_name']
 
         students = super().create(vals_list)
         # Créer automatiquement le contact partner pour chaque élève
@@ -237,11 +311,36 @@ class Student(models.Model):
         return students
 
     def write(self, vals):
+        # Formater le nom (tous les mots en MAJUSCULES)
+        if vals.get('last_name'):
+            vals['last_name'] = ' '.join([word.upper() for word in vals['last_name'].split()])
+
+        # Formater le prénom (tous les mots en Capitalize)
+        if vals.get('first_name'):
+            vals['first_name'] = ' '.join([word.capitalize() for word in vals['first_name'].split()])
+
+        # Logique de division du nom complet
+        if vals.get('name') and not (vals.get('first_name') or vals.get('last_name')):
+            parts = vals['name'].strip().split()
+            if len(parts) >= 1:
+                vals['last_name'] = parts[0].upper()
+                if len(parts) > 1:
+                    prenom_parts = parts[1:]
+                    vals['first_name'] = ' '.join([word.capitalize() for word in prenom_parts])
+
+        # Mise à jour du nom complet si prénom/nom modifiés
         if 'first_name' in vals or 'last_name' in vals:
             for record in self:
                 first_name = vals.get('first_name', record.first_name)
                 last_name = vals.get('last_name', record.last_name)
-                vals['name'] = f"{first_name} {last_name}"
+                if first_name and last_name:
+                    # Nom complet = NOM + Prénom (Nom toujours en premier)
+                    vals['name'] = f"{last_name} {first_name}"
+                elif last_name:
+                    vals['name'] = last_name
+                elif first_name:
+                    vals['name'] = first_name
+
         return super().write(vals)
 
     def action_enroll(self):

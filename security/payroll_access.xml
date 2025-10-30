@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Droits d'accès pour silina.payroll -->
+        <record id="access_silina_payroll_user" model="ir.model.access">
+            <field name="name">silina.payroll.user</field>
+            <field name="model_id" ref="model_silina_payroll"/>
+            <field name="group_id" ref="group_silina_edu_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="access_silina_payroll_coordinator" model="ir.model.access">
+            <field name="name">silina.payroll.coordinator</field>
+            <field name="model_id" ref="model_silina_payroll"/>
+            <field name="group_id" ref="group_silina_edu_coordinator"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="access_silina_payroll_manager" model="ir.model.access">
+            <field name="name">silina.payroll.manager</field>
+            <field name="model_id" ref="model_silina_payroll"/>
+            <field name="group_id" ref="group_silina_edu_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+    </data>
+</odoo>

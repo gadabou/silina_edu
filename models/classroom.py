@@ -49,17 +49,6 @@ class Classroom(models.Model):
         tracking=True
     )
 
-    capacity = fields.Integer(
-        string='Capacité',
-        default=30,
-        help="Nombre maximum d'élèves"
-    )
-
-    room = fields.Char(
-        string='Salle',
-        tracking=True
-    )
-
     # Élèves
     student_ids = fields.One2many(
         'silina.student',
@@ -92,13 +81,20 @@ class Classroom(models.Model):
         for record in self:
             record.student_count = len(record.student_ids)
 
-    @api.constrains('student_count', 'capacity')
-    def _check_capacity(self):
-        for record in self:
-            if record.capacity > 0 and record.student_count > record.capacity:
-                raise ValidationError(_(
-                    'Le nombre d\'élèves (%s) dépasse la capacité de la classe (%s)!'
-                ) % (record.student_count, record.capacity))
+    @api.onchange('level_id')
+    def _onchange_level_id(self):
+        """Remplir automatiquement le nom et le code avec le niveau sélectionné"""
+        if self.level_id:
+            # Remplir le nom avec le nom du niveau
+            self.name = self.level_id.name
+            # Remplir le code avec le code du niveau (sans espaces)
+            self.code = self.level_id.code.replace(' ', '') if self.level_id.code else ''
+
+    @api.onchange('code')
+    def _onchange_code(self):
+        """S'assurer que le code est toujours en un seul mot (sans espaces)"""
+        if self.code:
+            self.code = self.code.replace(' ', '')
 
     @api.depends('name', 'level_id', 'academic_year_id')
     def name_get(self):

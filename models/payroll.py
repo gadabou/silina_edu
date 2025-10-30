@@ -241,16 +241,19 @@ class Payroll(models.Model):
         if self.bill_id:
             raise ValidationError(_('Une facture existe déjà pour cette fiche de paie!'))
 
-        if not self.employee_id.address_home_id:
+        # Trouver ou créer le contact fournisseur pour l'employé
+        partner = self._get_or_create_employee_partner()
+
+        if not partner:
             raise ValidationError(_(
-                'Aucun contact privé n\'est défini pour cet employé! '
-                'Veuillez d\'abord créer un contact pour l\'employé.'
+                'Impossible de créer un contact pour cet employé! '
+                'Veuillez vérifier les informations de l\'employé.'
             ))
 
         # Créer la facture fournisseur
         bill_vals = {
             'move_type': 'in_invoice',
-            'partner_id': self.employee_id.address_home_id.id,
+            'partner_id': partner.id,
             'invoice_date': self.date,
             'invoice_date_due': self.date,
             'invoice_origin': self.name,
@@ -272,3 +275,50 @@ class Payroll(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
+
+    def _get_or_create_employee_partner(self):
+        """Trouver ou créer le contact partner pour l'employé"""
+        self.ensure_one()
+
+        # Vérifier si l'employé a déjà un contact lié
+        # Dans Odoo 18, vérifier différents champs possibles
+        partner = False
+
+        # Essayer address_home_id (anciennes versions)
+        if hasattr(self.employee_id, 'address_home_id') and self.employee_id.address_home_id:
+            partner = self.employee_id.address_home_id
+        # Essayer user_id.partner_id
+        elif self.employee_id.user_id and self.employee_id.user_id.partner_id:
+            partner = self.employee_id.user_id.partner_id
+        # Chercher un contact existant avec le même nom
+        elif self.employee_id.name:
+            partner = self.env['res.partner'].search([
+                ('name', '=', self.employee_id.name),
+                ('is_company', '=', False)
+            ], limit=1)
+
+        # Si aucun contact trouvé, en créer un nouveau
+        if not partner:
+            partner_vals = {
+                'name': self.employee_id.name,
+                'type': 'contact',
+                'is_company': False,
+                'supplier_rank': 1,  # Marquer comme fournisseur
+                'comment': f'Employé - Département: {self.employee_id.department_id.name if self.employee_id.department_id else "N/A"}',
+            }
+
+            # Ajouter des informations supplémentaires si disponibles
+            if self.employee_id.work_email:
+                partner_vals['email'] = self.employee_id.work_email
+            if self.employee_id.work_phone:
+                partner_vals['phone'] = self.employee_id.work_phone
+            if self.employee_id.mobile_phone:
+                partner_vals['mobile'] = self.employee_id.mobile_phone
+
+            partner = self.env['res.partner'].sudo().create(partner_vals)
+
+            # Lier le contact à l'employé si le champ existe
+            if hasattr(self.employee_id, 'address_home_id'):
+                self.employee_id.address_home_id = partner.id
+
+        return partner

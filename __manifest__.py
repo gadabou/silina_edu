@@ -34,6 +34,7 @@
         # Security
         'security/silina_edu_security.xml',
         'security/ir.model.access.csv',
+        'security/payroll_access.xml',
 
         # Data
         'data/sequence_data.xml',
@@ -63,14 +64,18 @@
         'views/menu_views.xml',
 
         # Reports
+        'reports/invoice_report_template.xml',
+        'reports/invoice_enhanced_template.xml',
         'reports/report_card_template.xml',
-        'reports/fee_receipt_template.xml',
         'reports/student_list_template.xml',
     ],
     'demo': [],
     'assets': {
         'web.assets_backend': [
             'silina_edu/static/src/css/silina_edu.css',
+        ],
+        'web.report_assets_common': [
+            'silina_edu/static/src/css/report_styles.css',
         ],
     },
     'images': [

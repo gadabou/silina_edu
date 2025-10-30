@@ -43,7 +43,6 @@
                     <field name="level_id"/>
                     <field name="main_teacher_id"/>
                     <field name="student_count"/>
-                    <field name="capacity"/>
                 </list>
             </field>
         </record>
@@ -61,15 +60,13 @@
                         </div>
                         <group>
                             <group>
-                                <field name="name"/>
-                                <field name="code"/>
                                 <field name="academic_year_id"/>
+                                <field name="level_id"/>
+                                <field name="name" placeholder="Ex: CP1-A, 6ème-B, etc."/>
+                                <field name="code" placeholder="Ex: CP1A, 6B, etc. (sans espaces)"/>
                             </group>
                             <group>
-                                <field name="level_id"/>
                                 <field name="main_teacher_id"/>
-                                <field name="capacity"/>
-                                <field name="room"/>
                             </group>
                         </group>
                         <notebook>
