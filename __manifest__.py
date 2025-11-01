@@ -54,6 +54,7 @@
         'views/exam_result_views.xml',
         'views/fee_type_views.xml',
         'views/payroll_views.xml',
+        'views/account_payment_views.xml',
 
         # Wizards (must be loaded before menus that reference them)
         'wizards/bulk_student_promotion_views.xml',

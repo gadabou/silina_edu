@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue héritée du formulaire de paiement pour ajouter le bouton d'impression du reçu -->
+        <record id="view_account_payment_form_inherit_silina" model="ir.ui.view">
+            <field name="name">account.payment.form.inherit.silina</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                <!-- Ajouter le bouton "Imprimer le reçu" dans le header après les autres boutons -->
+                <xpath expr="//form/header" position="inside">
+                    <button name="%(silina_edu.action_report_payment_receipt)d"
+                            string="Imprimer le reçu"
+                            type="action"
+                            class="oe_highlight"
+                            icon="fa-print"
+                            invisible="state != 'posted'"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

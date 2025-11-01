@@ -241,22 +241,43 @@ class StudentFeePayment(models.TransientModel):
 
     def _get_or_create_invoice(self):
         """Récupérer ou créer la facture appropriée
-        Une seule facture par type de frais et par élève avec toutes les tranches
+        Une seule facture par type de frais et par élève par année scolaire
         """
-        # Chercher une facture existante pour ce type de frais et cet élève
-        # On cherche une facture qui contient ce produit (type de frais) et qui n'est pas entièrement payée
-        invoice = self.env['account.move'].search([
+        # Chercher TOUTES les factures existantes pour ce type de frais, cet élève et cette année
+        # On inclut TOUTES les factures (payées ou non) pour éviter les doublons
+        invoices = self.env['account.move'].search([
             ('partner_id', '=', self.student_id.partner_id.id),
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
-            ('payment_state', 'in', ['not_paid', 'partial']),
             ('invoice_line_ids.product_id', '=', self.fee_type_id.product_id.id),
-        ], limit=1)
+            ('invoice_origin', 'ilike', self.student_id.academic_year_id.name),
+        ], order='create_date desc')
 
-        if not invoice:
-            # Créer UNE facture avec TOUTES les tranches en lignes distinctes
-            invoice = self._create_fee_invoice()
+        if invoices:
+            invoice = invoices[0]  # Prendre la plus récente
 
+            # Vérifier si la facture est déjà complètement payée
+            if invoice.payment_state == 'paid':
+                raise ValidationError(_(
+                    'Ce type de frais (%s) a déjà été entièrement payé pour cet élève (%s) '
+                    'pour l\'année scolaire %s.\n\n'
+                    'Facture: %s\n'
+                    'Montant total: %s %s\n'
+                    'Statut: Payée intégralement'
+                ) % (
+                    self.fee_type_id.name,
+                    self.student_id.name,
+                    self.student_id.academic_year_id.name,
+                    invoice.name,
+                    invoice.amount_total,
+                    invoice.currency_id.symbol
+                ))
+
+            # Si la facture existe et n'est pas complètement payée, la réutiliser
+            return invoice
+
+        # Aucune facture trouvée : en créer une nouvelle
+        invoice = self._create_fee_invoice()
         return invoice
 
     def _create_fee_invoice(self):
