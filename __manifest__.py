@@ -40,6 +40,13 @@
         'data/sequence_data.xml',
         'data/academic_data.xml',
 
+        # Reports (loaded before views to allow views to reference report actions)
+        'reports/invoice_report_template.xml',
+        'reports/invoice_enhanced_template.xml',
+        'reports/payment_receipt_template.xml',
+        'reports/report_card_template.xml',
+        'reports/student_list_template.xml',
+
         # Views - Separated by model
         # Note: classroom_views and student_views must be loaded before academic_year_views
         # because academic_year_views references their actions
@@ -66,13 +73,6 @@
 
         # Menus (loaded after wizards)
         'views/menu_views.xml',
-
-        # Reports
-        'reports/invoice_report_template.xml',
-        'reports/invoice_enhanced_template.xml',
-        'reports/payment_receipt_template.xml',
-        'reports/report_card_template.xml',
-        'reports/student_list_template.xml',
     ],
     'demo': [],
     'assets': {
