@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue héritée du formulaire de facture pour ajouter le bouton d'impression thermique -->
+        <record id="view_move_form_inherit_silina_thermal" model="ir.ui.view">
+            <field name="name">account.move.form.inherit.silina.thermal</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <!-- Ajouter le bouton "Imprimer" dans le header après le bouton existant -->
+                <xpath expr="//header" position="inside">
+                    <button name="action_print_thermal_invoice"
+                            string="Imprimer"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-print"
+                            invisible="move_type not in ['out_invoice', 'out_refund'] or state != 'posted'"
+                            help="Imprimer la facture sur imprimante thermique 80mm"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

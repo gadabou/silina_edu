@@ -43,9 +43,11 @@
         # because invoice_report_template.xml inherits from report_card_standard_document
         'reports/report_card_template.xml',
         'reports/payment_receipt_template.xml',
+        'reports/payment_receipt_thermal_80mm_template.xml',
         'reports/student_list_template.xml',
         'reports/invoice_report_template.xml',
         'reports/invoice_enhanced_template.xml',
+        'reports/invoice_thermal_template.xml',
 
         # Views - Separated by model
         # Note: classroom_views and student_views must be loaded before academic_year_views
@@ -65,6 +67,7 @@
         'views/fee_type_views.xml',
         'views/payroll_views.xml',
         'views/account_payment_views.xml',
+        'views/account_move_views.xml',
 
         # Wizards (must be loaded before menus that reference them)
         'wizards/bulk_student_promotion_views.xml',
@@ -79,6 +82,7 @@
     'assets': {
         'web.assets_backend': [
             'silina_edu/static/src/css/silina_edu.css',
+            'silina_edu/static/src/js/auto_print_invoice.js',
         ],
         'web.report_assets_common': [
             'silina_edu/static/src/css/report_styles.css',

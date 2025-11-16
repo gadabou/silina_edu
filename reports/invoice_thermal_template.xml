@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Format de papier pour imprimante thermique 80mm x 210mm -->
+        <record id="paperformat_thermal_80mm" model="report.paperformat">
+            <field name="name">Thermal 80mm x 210mm</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="page_height">210</field>
+            <field name="page_width">80</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">3</field>
+            <field name="margin_bottom">3</field>
+            <field name="margin_left">3</field>
+            <field name="margin_right">3</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">80</field>
+        </record>
+
+        <!-- Rapport pour impression thermique 80mm x 210mm -->
+        <record id="action_report_invoice_thermal" model="ir.actions.report">
+            <field name="name">Facture (Imprimante Thermique 80mm)</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">silina_edu.report_invoice_thermal_document</field>
+            <field name="report_file">silina_edu.report_invoice_thermal_document</field>
+            <field name="binding_model_id" ref="account.model_account_move"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="silina_edu.paperformat_thermal_80mm"/>
+        </record>
+
+        <!-- Template pour facture thermique -->
+        <template id="report_invoice_thermal_document">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                    <div class="page" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+
+                        <style>
+                            @page {
+                                size: 80mm 210mm;
+                                margin: 3mm;
+                            }
+
+                            body {
+                                font-family: 'DejaVu Sans', 'Arial', sans-serif;
+                                font-size: 9pt;
+                                line-height: 1.3;
+                                margin: 0;
+                                padding: 0;
+                                color: #000;
+                            }
+
+                            .thermal-container {
+                                width: 74mm;
+                                margin: 0 auto;
+                                padding: 2mm;
+                            }
+
+                            .text-center {
+                                text-align: center;
+                            }
+
+                            .text-right {
+                                text-align: right;
+                            }
+
+                            .text-left {
+                                text-align: left;
+                            }
+
+                            .bold {
+                                font-weight: bold;
+                            }
+
+                            .header-section {
+                                text-align: center;
+                                margin-bottom: 3mm;
+                                border-bottom: 1px dashed #000;
+                                padding-bottom: 3mm;
+                            }
+
+                            .company-name {
+                                font-size: 12pt;
+                                font-weight: bold;
+                                margin-bottom: 1mm;
+                            }
+
+                            .company-info {
+                                font-size: 8pt;
+                                margin-bottom: 0.5mm;
+                            }
+
+                            .invoice-title {
+                                font-size: 11pt;
+                                font-weight: bold;
+                                margin: 3mm 0;
+                                text-align: center;
+                                border-top: 1px dashed #000;
+                                border-bottom: 1px dashed #000;
+                                padding: 2mm 0;
+                            }
+
+                            .info-section {
+                                margin-bottom: 3mm;
+                                font-size: 8.5pt;
+                            }
+
+                            .info-line {
+                                margin-bottom: 1mm;
+                                display: table;
+                                width: 100%;
+                            }
+
+                            .info-label {
+                                display: table-cell;
+                                font-weight: bold;
+                                width: 35%;
+                            }
+
+                            .info-value {
+                                display: table-cell;
+                                width: 65%;
+                            }
+
+                            .items-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin: 3mm 0;
+                                font-size: 8pt;
+                            }
+
+                            .items-table th {
+                                border-top: 1px solid #000;
+                                border-bottom: 1px solid #000;
+                                padding: 2mm 1mm;
+                                font-weight: bold;
+                                text-align: left;
+                            }
+
+                            .items-table td {
+                                padding: 1.5mm 1mm;
+                                border-bottom: 1px dotted #ccc;
+                            }
+
+                            .item-name {
+                                font-weight: bold;
+                                margin-bottom: 0.5mm;
+                            }
+
+                            .item-details {
+                                font-size: 7pt;
+                                color: #333;
+                                font-style: italic;
+                            }
+
+                            .totals-section {
+                                margin-top: 3mm;
+                                border-top: 1px solid #000;
+                                padding-top: 2mm;
+                            }
+
+                            .total-line {
+                                display: table;
+                                width: 100%;
+                                margin-bottom: 1.5mm;
+                            }
+
+                            .total-label {
+                                display: table-cell;
+                                text-align: left;
+                                width: 60%;
+                            }
+
+                            .total-value {
+                                display: table-cell;
+                                text-align: right;
+                                width: 40%;
+                            }
+
+                            .grand-total {
+                                border-top: 2px solid #000;
+                                border-bottom: 2px solid #000;
+                                padding: 2mm 0;
+                                margin-top: 2mm;
+                                font-size: 10pt;
+                                font-weight: bold;
+                            }
+
+                            .payment-info {
+                                margin-top: 3mm;
+                                padding: 2mm;
+                                background-color: #f0f0f0;
+                                border: 1px solid #000;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+
+                            .footer-section {
+                                margin-top: 5mm;
+                                padding-top: 3mm;
+                                border-top: 1px dashed #000;
+                                text-align: center;
+                                font-size: 7.5pt;
+                            }
+
+                            .barcode-section {
+                                text-align: center;
+                                margin: 3mm 0;
+                            }
+                        </style>
+
+                        <div class="thermal-container">
+
+                            <!-- En-tête -->
+                            <div class="header-section">
+                                <div class="company-name" t-field="o.company_id.name"/>
+                                <div class="company-info" t-if="o.company_id.street">
+                                    <span t-field="o.company_id.street"/>
+                                </div>
+                                <div class="company-info" t-if="o.company_id.city">
+                                    <span t-field="o.company_id.city"/>
+                                </div>
+                                <div class="company-info" t-if="o.company_id.phone">
+                                    Tél: <span t-field="o.company_id.phone"/>
+                                </div>
+                                <div class="company-info" t-if="o.company_id.email">
+                                    <span t-field="o.company_id.email"/>
+                                </div>
+                            </div>
+
+                            <!-- Titre de la facture -->
+                            <div class="invoice-title">
+                                <t t-if="o.move_type == 'out_invoice' and o.state == 'posted'">FACTURE</t>
+                                <t t-elif="o.move_type == 'out_invoice' and o.state == 'draft'">FACTURE BROUILLON</t>
+                                <t t-elif="o.move_type == 'out_refund'">AVOIR</t>
+                                <t t-else="1">DOCUMENT</t>
+                            </div>
+
+                            <!-- Informations facture -->
+                            <div class="info-section">
+                                <div class="info-line">
+                                    <div class="info-label">Facture N°:</div>
+                                    <div class="info-value" t-field="o.name"/>
+                                </div>
+                                <div class="info-line">
+                                    <div class="info-label">Date:</div>
+                                    <div class="info-value" t-field="o.invoice_date"/>
+                                </div>
+                                <div class="info-line" t-if="o.invoice_date_due">
+                                    <div class="info-label">Échéance:</div>
+                                    <div class="info-value" t-field="o.invoice_date_due"/>
+                                </div>
+                            </div>
+
+                            <!-- Informations client -->
+                            <div class="info-section" style="border-top: 1px dashed #000; padding-top: 2mm;">
+                                <div class="info-line">
+                                    <div class="info-label">Client:</div>
+                                    <div class="info-value bold" t-field="o.partner_id.name"/>
+                                </div>
+                                <div class="info-line" t-if="o.partner_id.phone">
+                                    <div class="info-label">Tél:</div>
+                                    <div class="info-value" t-field="o.partner_id.phone"/>
+                                </div>
+
+                                <!-- Informations élève si présentes -->
+                                <t t-set="student_lines" t-value="o.invoice_line_ids.filtered(lambda l: 'Élève' in (l.name or ''))"/>
+                                <t t-if="student_lines">
+                                    <t t-foreach="student_lines[:1]" t-as="line">
+                                        <t t-if="'Élève:' in line.name">
+                                            <div class="info-line" style="margin-top: 1mm;">
+                                                <div class="info-label">Élève:</div>
+                                                <div class="info-value">
+                                                    <t t-set="student_name" t-value="line.name.split('Élève:')[1].split('\n')[0].strip() if 'Élève:' in line.name else ''"/>
+                                                    <span t-esc="student_name"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <t t-if="'Matricule:' in line.name">
+                                            <div class="info-line">
+                                                <div class="info-label">Matricule:</div>
+                                                <div class="info-value">
+                                                    <t t-set="matricule" t-value="line.name.split('Matricule:')[1].split('\n')[0].strip() if 'Matricule:' in line.name else ''"/>
+                                                    <span t-esc="matricule"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <t t-if="'Classe:' in line.name">
+                                            <div class="info-line">
+                                                <div class="info-label">Classe:</div>
+                                                <div class="info-value">
+                                                    <t t-set="classe" t-value="line.name.split('Classe:')[1].split('\n')[0].strip() if 'Classe:' in line.name else ''"/>
+                                                    <span t-esc="classe"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </t>
+                                </t>
+                            </div>
+
+                            <!-- Lignes de facture -->
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 55%;">Désignation</th>
+                                        <th style="width: 15%; text-align: center;">Qté</th>
+                                        <th style="width: 30%; text-align: right;">Montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.invoice_line_ids.filtered(lambda l: not l.display_type)" t-as="line">
+                                        <tr>
+                                            <td>
+                                                <div class="item-name">
+                                                    <!-- Extraire seulement le nom du produit/service -->
+                                                    <t t-set="product_name" t-value="line.product_id.name or line.name.split('\n')[0]"/>
+                                                    <span t-esc="product_name"/>
+                                                </div>
+                                                <t t-if="line.name and len(line.name.split('\n')) &gt; 1">
+                                                    <div class="item-details">
+                                                        <!-- Extraire les détails (lignes supplémentaires) -->
+                                                        <t t-set="details_lines" t-value="'\n'.join(line.name.split('\n')[1:4])"/>
+                                                        <span t-esc="details_lines"/>
+                                                    </div>
+                                                </t>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span t-esc="'%.0f' % line.quantity if line.quantity == int(line.quantity) else '%.2f' % line.quantity"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <span t-esc="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
+                                                <span t-esc="o.currency_id.symbol"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                            <!-- Totaux -->
+                            <div class="totals-section">
+                                <div class="total-line">
+                                    <div class="total-label">Montant HT:</div>
+                                    <div class="total-value">
+                                        <span t-esc="'{:,.0f}'.format(o.amount_untaxed).replace(',', ' ')"/>
+                                        <span t-esc="o.currency_id.symbol"/>
+                                    </div>
+                                </div>
+
+                                <t t-if="o.amount_tax &gt; 0">
+                                    <div class="total-line">
+                                        <div class="total-label">Taxes:</div>
+                                        <div class="total-value">
+                                            <span t-esc="'{:,.0f}'.format(o.amount_tax).replace(',', ' ')"/>
+                                            <span t-esc="o.currency_id.symbol"/>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <div class="total-line grand-total">
+                                    <div class="total-label">TOTAL:</div>
+                                    <div class="total-value">
+                                        <span t-esc="'{:,.0f}'.format(o.amount_total).replace(',', ' ')"/>
+                                        <span t-esc="o.currency_id.symbol"/>
+                                    </div>
+                                </div>
+
+                                <!-- Informations de paiement -->
+                                <t t-if="o.payment_state in ['paid', 'in_payment', 'partial']">
+                                    <div class="payment-info">
+                                        <div class="total-line">
+                                            <div class="total-label bold">Montant payé:</div>
+                                            <div class="total-value bold">
+                                                <span t-esc="'{:,.0f}'.format(o.amount_total - o.amount_residual).replace(',', ' ')"/>
+                                                <span t-esc="o.currency_id.symbol"/>
+                                            </div>
+                                        </div>
+                                        <t t-if="o.amount_residual &gt; 0">
+                                            <div class="total-line" style="margin-top: 1mm; color: #c00;">
+                                                <div class="total-label bold">Reste à payer:</div>
+                                                <div class="total-value bold">
+                                                    <span t-esc="'{:,.0f}'.format(o.amount_residual).replace(',', ' ')"/>
+                                                    <span t-esc="o.currency_id.symbol"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <t t-else="1">
+                                            <div class="total-line" style="margin-top: 1mm; color: #0a0; font-weight: bold;">
+                                                <div class="total-label bold">Statut:</div>
+                                                <div class="total-value bold">PAYÉ</div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-else="1">
+                                    <div class="total-line" style="margin-top: 2mm; font-weight: bold;">
+                                        <div class="total-label">Statut:</div>
+                                        <div class="total-value">
+                                            <t t-if="o.payment_state == 'not_paid'">NON PAYÉ</t>
+                                            <t t-else="1">
+                                                <span t-field="o.payment_state"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Notes -->
+                            <t t-if="o.narration">
+                                <div style="margin-top: 3mm; font-size: 7.5pt; border-top: 1px dashed #000; padding-top: 2mm;">
+                                    <div style="font-weight: bold; margin-bottom: 1mm;">Notes:</div>
+                                    <div t-field="o.narration"/>
+                                </div>
+                            </t>
+
+                            <!-- Pied de page -->
+                            <div class="footer-section">
+                                <div style="margin-bottom: 2mm;">Merci pour votre confiance!</div>
+                                <div style="font-size: 7pt; margin-top: 2mm;">
+                                    Imprimé le <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>

@@ -10,10 +10,17 @@
             <field name="arch" type="xml">
                 <!-- Ajouter le bouton "Imprimer le reçu" dans le header après les autres boutons -->
                 <xpath expr="//form/header" position="inside">
-                    <button name="%(silina_edu.action_report_payment_receipt)d"
-                            string="Imprimer le reçu"
-                            type="action"
+                    <button name="action_print_thermal_receipt"
+                            string="Imprimer"
+                            type="object"
                             class="oe_highlight"
+                            icon="fa-print"
+                            invisible="state != 'posted'"
+                            help="Imprimer le reçu sur imprimante thermique 80mm"/>
+                    <button name="%(silina_edu.action_report_payment_receipt)d"
+                            string="Imprimer le reçu 58mm"
+                            type="action"
+                            class="btn-secondary"
                             icon="fa-print"
                             invisible="state != 'posted'"/>
                 </xpath>

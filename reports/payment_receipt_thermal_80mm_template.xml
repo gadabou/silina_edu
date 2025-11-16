@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Rapport de Reçu de Paiement Thermique 80mm x 210mm -->
+        <record id="action_report_payment_receipt_thermal_80mm" model="ir.actions.report">
+            <field name="name">Reçu de Paiement (Imprimante Thermique 80mm)</field>
+            <field name="model">account.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">silina_edu.report_payment_receipt_thermal_80mm_document</field>
+            <field name="report_file">silina_edu.report_payment_receipt_thermal_80mm_document</field>
+            <field name="binding_model_id" ref="account.model_account_payment"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="silina_edu.paperformat_thermal_80mm"/>
+        </record>
+
+        <template id="report_payment_receipt_thermal_80mm_document">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="payment">
+                    <t t-set="lang" t-value="payment.partner_id.lang or payment.company_id.partner_id.lang"/>
+                    <div class="page" t-att-data-oe-model="payment and payment._name" t-att-data-oe-id="payment and payment.id">
+
+                        <style>
+                            @page {
+                                size: 80mm 210mm;
+                                margin: 3mm;
+                            }
+
+                            body {
+                                font-family: 'DejaVu Sans', 'Arial', sans-serif;
+                                font-size: 9pt;
+                                line-height: 1.3;
+                                margin: 0;
+                                padding: 0;
+                                color: #000;
+                            }
+
+                            .thermal-container {
+                                width: 74mm;
+                                margin: 0 auto;
+                                padding: 2mm;
+                            }
+
+                            .text-center {
+                                text-align: center;
+                            }
+
+                            .text-right {
+                                text-align: right;
+                            }
+
+                            .text-left {
+                                text-align: left;
+                            }
+
+                            .bold {
+                                font-weight: bold;
+                            }
+
+                            .header-section {
+                                text-align: center;
+                                margin-bottom: 3mm;
+                                border-bottom: 1px dashed #000;
+                                padding-bottom: 3mm;
+                            }
+
+                            .company-name {
+                                font-size: 12pt;
+                                font-weight: bold;
+                                margin-bottom: 1mm;
+                            }
+
+                            .company-info {
+                                font-size: 8pt;
+                                margin-bottom: 0.5mm;
+                            }
+
+                            .receipt-title {
+                                font-size: 11pt;
+                                font-weight: bold;
+                                margin: 3mm 0;
+                                text-align: center;
+                                border-top: 1px dashed #000;
+                                border-bottom: 1px dashed #000;
+                                padding: 2mm 0;
+                            }
+
+                            .info-section {
+                                margin-bottom: 3mm;
+                                font-size: 8.5pt;
+                            }
+
+                            .info-line {
+                                margin-bottom: 1mm;
+                                display: table;
+                                width: 100%;
+                            }
+
+                            .info-label {
+                                display: table-cell;
+                                font-weight: bold;
+                                width: 40%;
+                            }
+
+                            .info-value {
+                                display: table-cell;
+                                width: 60%;
+                            }
+
+                            .amount-box {
+                                text-align: center;
+                                margin: 3mm 0;
+                                padding: 3mm;
+                                border: 2px solid #000;
+                                background-color: #f0f0f0;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+
+                            .amount-label {
+                                font-size: 9pt;
+                                margin-bottom: 1mm;
+                                font-weight: bold;
+                            }
+
+                            .amount-value {
+                                font-size: 14pt;
+                                font-weight: bold;
+                            }
+
+                            .items-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin: 3mm 0;
+                                font-size: 8pt;
+                            }
+
+                            .items-table th {
+                                border-top: 1px solid #000;
+                                border-bottom: 1px solid #000;
+                                padding: 2mm 1mm;
+                                font-weight: bold;
+                                text-align: left;
+                            }
+
+                            .items-table td {
+                                padding: 1.5mm 1mm;
+                                border-bottom: 1px dotted #ccc;
+                            }
+
+                            .totals-section {
+                                margin-top: 3mm;
+                                border-top: 1px solid #000;
+                                padding-top: 2mm;
+                            }
+
+                            .total-line {
+                                display: table;
+                                width: 100%;
+                                margin-bottom: 1.5mm;
+                            }
+
+                            .total-label {
+                                display: table-cell;
+                                text-align: left;
+                                width: 60%;
+                            }
+
+                            .total-value {
+                                display: table-cell;
+                                text-align: right;
+                                width: 40%;
+                            }
+
+                            .status-paid {
+                                text-align: center;
+                                font-size: 10pt;
+                                font-weight: bold;
+                                margin: 3mm 0;
+                                padding: 2mm;
+                                border: 2px double #000;
+                                background-color: #d4edda;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+
+                            .footer-section {
+                                margin-top: 5mm;
+                                padding-top: 3mm;
+                                border-top: 1px dashed #000;
+                                text-align: center;
+                                font-size: 7.5pt;
+                            }
+
+                            .signature-section {
+                                margin-top: 4mm;
+                                text-align: center;
+                                font-size: 8pt;
+                            }
+
+                            .signature-line {
+                                border-top: 1px solid #000;
+                                width: 50%;
+                                margin: 3mm auto 2mm;
+                            }
+                        </style>
+
+                        <div class="thermal-container">
+
+                            <!-- Variables -->
+                            <t t-set="student" t-value="env['silina.student'].search([('partner_id', '=', payment.partner_id.id)], limit=1)"/>
+                            <t t-set="invoice" t-value="payment.reconciled_invoice_ids[0] if payment.reconciled_invoice_ids else False"/>
+
+                            <!-- En-tête -->
+                            <div class="header-section">
+                                <div class="company-name" t-field="payment.company_id.name"/>
+                                <div class="company-info" t-if="payment.company_id.street">
+                                    <span t-field="payment.company_id.street"/>
+                                </div>
+                                <div class="company-info" t-if="payment.company_id.city">
+                                    <span t-field="payment.company_id.city"/>
+                                </div>
+                                <div class="company-info" t-if="payment.company_id.phone">
+                                    Tél: <span t-field="payment.company_id.phone"/>
+                                </div>
+                                <div class="company-info" t-if="payment.company_id.email">
+                                    <span t-field="payment.company_id.email"/>
+                                </div>
+                            </div>
+
+                            <!-- Titre du reçu -->
+                            <div class="receipt-title">
+                                REÇU DE PAIEMENT
+                            </div>
+
+                            <!-- Informations reçu -->
+                            <div class="info-section">
+                                <div class="info-line">
+                                    <div class="info-label">Reçu N°:</div>
+                                    <div class="info-value" t-field="payment.name"/>
+                                </div>
+                                <div class="info-line">
+                                    <div class="info-label">Date:</div>
+                                    <div class="info-value" t-field="payment.date"/>
+                                </div>
+                                <div class="info-line">
+                                    <div class="info-label">Mode de paiement:</div>
+                                    <div class="info-value" t-field="payment.journal_id.name"/>
+                                </div>
+                                <div class="info-line" t-if="payment.move_id and payment.move_id.ref">
+                                    <div class="info-label">Référence:</div>
+                                    <div class="info-value" t-field="payment.move_id.ref"/>
+                                </div>
+                            </div>
+
+                            <!-- Informations client/élève -->
+                            <div class="info-section" style="border-top: 1px dashed #000; padding-top: 2mm;">
+                                <div class="info-line">
+                                    <div class="info-label">Client:</div>
+                                    <div class="info-value bold" t-field="payment.partner_id.name"/>
+                                </div>
+                                <t t-if="student">
+                                    <div class="info-line">
+                                        <div class="info-label">Élève:</div>
+                                        <div class="info-value" t-field="student.name"/>
+                                    </div>
+                                    <div class="info-line">
+                                        <div class="info-label">Matricule:</div>
+                                        <div class="info-value" t-field="student.registration_number"/>
+                                    </div>
+                                    <div class="info-line">
+                                        <div class="info-label">Classe:</div>
+                                        <div class="info-value" t-field="student.classroom_id.name"/>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Montant payé -->
+                            <div class="amount-box">
+                                <div class="amount-label">MONTANT PAYÉ</div>
+                                <div class="amount-value">
+                                    <span t-esc="'{:,.0f}'.format(payment.amount).replace(',', ' ')"/>
+                                    <span t-esc="payment.currency_id.symbol"/>
+                                </div>
+                            </div>
+
+                            <!-- Détails de la facture si disponible -->
+                            <t t-if="invoice">
+                                <div class="info-section" style="border-top: 1px dashed #000; padding-top: 2mm;">
+                                    <div class="info-line">
+                                        <div class="info-label">Facture N°:</div>
+                                        <div class="info-value bold" t-field="invoice.name"/>
+                                    </div>
+                                    <div class="info-line">
+                                        <div class="info-label">Date facture:</div>
+                                        <div class="info-value" t-field="invoice.invoice_date"/>
+                                    </div>
+                                </div>
+
+                                <!-- Lignes de facture -->
+                                <table class="items-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 60%;">Désignation</th>
+                                            <th style="width: 40%; text-align: right;">Montant</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="invoice.invoice_line_ids.filtered(lambda l: not l.display_type)" t-as="line">
+                                            <tr>
+                                                <td>
+                                                    <t t-set="product_name" t-value="line.product_id.name or line.name.split('\n')[0]"/>
+                                                    <span t-esc="product_name"/>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <span t-esc="'{:,.0f}'.format(line.price_subtotal).replace(',', ' ')"/>
+                                                    <span t-esc="invoice.currency_id.symbol"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+
+                                <!-- Totaux -->
+                                <div class="totals-section">
+                                    <div class="total-line">
+                                        <div class="total-label">Total facture:</div>
+                                        <div class="total-value">
+                                            <span t-esc="'{:,.0f}'.format(invoice.amount_total).replace(',', ' ')"/>
+                                            <span t-esc="invoice.currency_id.symbol"/>
+                                        </div>
+                                    </div>
+                                    <div class="total-line">
+                                        <div class="total-label">Déjà payé:</div>
+                                        <div class="total-value">
+                                            <span t-esc="'{:,.0f}'.format(invoice.amount_total - invoice.amount_residual).replace(',', ' ')"/>
+                                            <span t-esc="invoice.currency_id.symbol"/>
+                                        </div>
+                                    </div>
+                                    <div class="total-line bold">
+                                        <div class="total-label">Reste à payer:</div>
+                                        <div class="total-value">
+                                            <span t-esc="'{:,.0f}'.format(invoice.amount_residual).replace(',', ' ')"/>
+                                            <span t-esc="invoice.currency_id.symbol"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Statut soldé -->
+                                <t t-if="invoice.amount_residual &lt;= 0.01">
+                                    <div class="status-paid">
+                                        ✓ FACTURE SOLDÉE
+                                    </div>
+                                </t>
+                            </t>
+
+                            <!-- Signature -->
+                            <div class="signature-section">
+                                <div>Signature du caissier</div>
+                                <div class="signature-line"></div>
+                            </div>
+
+                            <!-- Pied de page -->
+                            <div class="footer-section">
+                                <div style="margin-bottom: 2mm;">Ce reçu fait foi de paiement</div>
+                                <div style="margin-bottom: 2mm;">Merci de le conserver</div>
+                                <div style="font-size: 7pt; margin-top: 2mm;">
+                                    Imprimé le <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>
