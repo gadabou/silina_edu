@@ -54,7 +54,6 @@ class Student(models.Model):
 
     date_of_birth = fields.Date(
         string='Date de naissance',
-        required=True,
         tracking=True
     )
     age = fields.Integer(
