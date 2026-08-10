@@ -14,18 +14,35 @@
                         </div>
 
                         <div class="alert alert-info" role="alert" invisible="not existing_invoices or overdue_invoices_count > 0">
-                            <strong>ℹ️ Information:</strong> Il existe des factures impayées pour un montant de <field name="unpaid_amount" widget="monetary"/>.
+                            <strong>ℹ️ Information:</strong> Il existe des factures impayées pour un montant de <field name="unpaid_amount" widget="monetary"/> (toutes années confondues).
+                        </div>
+
+                        <div class="alert alert-warning" role="alert" invisible="not is_previous_year_payment">
+                            <strong>📅 Frais d'une année antérieure :</strong> cette facture concerne l'année scolaire
+                            <field name="invoice_academic_year_id" readonly="1"/>. Le paiement est autorisé même si nous sommes dans une nouvelle année.
                         </div>
 
                         <group>
                             <group>
                                 <field name="student_id" options="{'no_create': True, 'no_open': True}"/>
-                                <field name="fee_type_id" options="{'no_create': True}"/>
+                                <field name="available_invoice_ids" invisible="1"/>
+                                <field name="payment_target" widget="radio"/>
+                                <field name="invoice_id"
+                                       invisible="payment_target != 'existing'"
+                                       required="payment_target == 'existing'"
+                                       options="{'no_create': True}"/>
+                                <field name="invoice_academic_year_id" invisible="1"/>
+                                <field name="is_previous_year_payment" invisible="1"/>
+                                <field name="fee_type_id"
+                                       options="{'no_create': True}"
+                                       invisible="payment_target != 'new'"
+                                       required="payment_target == 'new'"/>
                                 <field name="has_installments" invisible="1"/>
-                                <field name="payment_type" widget="radio" invisible="not has_installments"/>
-                                <field name="installment_id" invisible="payment_type != 'installment' or not has_installments" required="payment_type == 'installment' and has_installments"/>
+                                <field name="payment_type" widget="radio" invisible="payment_target != 'new' or not has_installments"/>
+                                <field name="installment_id" invisible="payment_target != 'new' or payment_type != 'installment' or not has_installments" required="payment_target == 'new' and payment_type == 'installment' and has_installments"/>
                             </group>
                             <group>
+                                <field name="invoice_residual" widget="monetary" invisible="payment_target != 'existing'" readonly="1"/>
                                 <field name="amount" widget="monetary"/>
                                 <field name="payment_method"/>
                                 <field name="payment_date"/>

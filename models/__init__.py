@@ -12,4 +12,5 @@ from . import subject_assignment
 from . import fee_type
 from . import payroll
 from . import res_partner
+from . import account_move
 from . import dashboard

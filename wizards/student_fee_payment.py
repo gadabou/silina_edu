@@ -15,7 +15,42 @@ class StudentFeePayment(models.TransientModel):
     fee_type_id = fields.Many2one(
         'silina.fee.type',
         string='Type de frais',
-        required=True
+        help="Requis uniquement pour créer une nouvelle facture. "
+             "Ignoré si une facture existante est sélectionnée."
+    )
+
+    # Règlement d'une facture existante, éventuellement d'une année antérieure.
+    payment_target = fields.Selection([
+        ('existing', 'Régler une facture existante'),
+        ('new', 'Créer une nouvelle facture de frais'),
+    ], string='Objet du paiement', default='existing', required=True)
+
+    invoice_id = fields.Many2one(
+        'account.move',
+        string='Facture à régler',
+        domain="[('id', 'in', available_invoice_ids)]",
+        help="Factures impayées de l'élève, toutes années scolaires confondues."
+    )
+
+    available_invoice_ids = fields.Many2many(
+        'account.move',
+        compute='_compute_available_invoices',
+        string='Factures réglables'
+    )
+
+    invoice_academic_year_id = fields.Many2one(
+        'silina.academic.year',
+        string='Année de la facture',
+        compute='_compute_invoice_info'
+    )
+    invoice_residual = fields.Monetary(
+        string='Reste dû sur la facture',
+        compute='_compute_invoice_info',
+        currency_field='currency_id'
+    )
+    is_previous_year_payment = fields.Boolean(
+        string="Facture d'une année antérieure",
+        compute='_compute_invoice_info'
     )
 
     installment_id = fields.Many2one(
@@ -87,15 +122,41 @@ class StudentFeePayment(models.TransientModel):
         help="Indique si le type de frais sélectionné a des tranches de paiement"
     )
 
+    @api.depends('student_id')
+    def _compute_available_invoices(self):
+        """Toutes les factures impayées de l'élève, toutes années confondues."""
+        for record in self:
+            if not record.student_id:
+                record.available_invoice_ids = False
+                continue
+            persons = record.student_id._get_person_students()
+            invoices = record.student_id._get_fee_invoices(persons).filtered(
+                lambda m: m.payment_state in ('not_paid', 'partial'))
+            record.available_invoice_ids = invoices
+
+    @api.depends('invoice_id', 'student_id')
+    def _compute_invoice_info(self):
+        for record in self:
+            inv = record.invoice_id
+            record.invoice_residual = inv.amount_residual if inv else 0.0
+            year = inv.silina_academic_year_id if inv else False
+            record.invoice_academic_year_id = year
+            current_year = record.student_id.academic_year_id
+            record.is_previous_year_payment = bool(
+                inv and year and current_year and year != current_year)
+
     @api.depends('fee_type_id')
     def _compute_has_installments(self):
         for record in self:
             record.has_installments = bool(record.fee_type_id and record.fee_type_id.installment_ids)
 
-    @api.depends('fee_type_id', 'payment_type', 'installment_id')
+    @api.depends('fee_type_id', 'payment_type', 'installment_id', 'payment_target', 'invoice_id')
     def _compute_amount(self):
         for record in self:
-            if record.payment_type == 'installment' and record.installment_id:
+            if record.payment_target == 'existing':
+                # Par défaut : solder le reste dû de la facture sélectionnée
+                record.amount = record.invoice_id.amount_residual if record.invoice_id else 0.0
+            elif record.payment_type == 'installment' and record.installment_id:
                 record.amount = record.installment_id.amount
             elif record.payment_type == 'full' and record.fee_type_id:
                 # Si le type de frais a des tranches, additionner les montants
@@ -107,29 +168,44 @@ class StudentFeePayment(models.TransientModel):
             else:
                 record.amount = 0.0
 
-    @api.depends('student_id', 'fee_type_id')
+    @api.depends('student_id')
     def _compute_existing_invoices(self):
         for record in self:
-            if record.student_id and record.fee_type_id:
-                # Chercher les factures existantes pour cet élève et ce type de frais
-                invoices = self.env['account.move'].search([
-                    ('partner_id', '=', record.student_id.partner_id.id),
-                    ('move_type', '=', 'out_invoice'),
-                    ('state', '=', 'posted'),
-                    ('payment_state', 'in', ['not_paid', 'partial']),
-                    ('invoice_line_ids.product_id', '=', record.fee_type_id.product_id.id),
-                ])
+            if record.student_id:
+                # Toutes les factures impayées de l'élève, toutes années confondues
+                persons = record.student_id._get_person_students()
+                invoices = record.student_id._get_fee_invoices(persons).filtered(
+                    lambda m: m.payment_state in ('not_paid', 'partial'))
                 record.existing_invoices = bool(invoices)
                 record.unpaid_amount = sum(invoices.mapped('amount_residual'))
 
                 # Compter les factures en retard
                 today = fields.Date.today()
-                overdue = invoices.filtered(lambda inv: inv.invoice_date_due and inv.invoice_date_due < today)
+                overdue = invoices.filtered(
+                    lambda inv: inv.invoice_date_due and inv.invoice_date_due < today)
                 record.overdue_invoices_count = len(overdue)
             else:
                 record.existing_invoices = False
                 record.unpaid_amount = 0.0
                 record.overdue_invoices_count = 0
+
+    @api.onchange('invoice_id')
+    def _onchange_invoice_id(self):
+        """Charger le reste dû de la facture sélectionnée."""
+        if self.invoice_id:
+            self.amount = self.invoice_id.amount_residual
+            if self.invoice_id.silina_fee_type_id:
+                self.fee_type_id = self.invoice_id.silina_fee_type_id
+
+    @api.onchange('payment_target')
+    def _onchange_payment_target(self):
+        """Proposer par défaut la plus ancienne facture impayée."""
+        if self.payment_target == 'existing':
+            if not self.invoice_id and self.available_invoice_ids:
+                self.invoice_id = self.available_invoice_ids.sorted(
+                    key=lambda m: (m.invoice_date_due or m.invoice_date))[0]
+        else:
+            self.invoice_id = False
 
     @api.onchange('student_id')
     def _onchange_student_id(self):
@@ -137,6 +213,7 @@ class StudentFeePayment(models.TransientModel):
         if self.student_id:
             # Réinitialiser le type de frais quand on change d'élève
             self.fee_type_id = False
+            self.invoice_id = False
 
             # Retourner le domaine pour filtrer les types de frais
             if self.student_id.level_id:
@@ -194,15 +271,19 @@ class StudentFeePayment(models.TransientModel):
         if self.installment_id:
             self.amount = self.installment_id.amount
 
-    @api.constrains('amount', 'student_id', 'fee_type_id')
+    @api.constrains('amount', 'student_id', 'fee_type_id', 'invoice_id', 'payment_target')
     def _check_payment_amount(self):
         """Vérifier que le montant de paiement ne dépasse pas le montant restant dû"""
         for record in self:
             if record.amount <= 0:
                 raise ValidationError(_('Le montant du paiement doit être supérieur à 0.'))
 
-            # Vérifier s'il existe une facture pour ce type de frais
-            if record.student_id and record.student_id.partner_id and record.fee_type_id:
+            # Cas 1 : règlement d'une facture précise (y compris année antérieure)
+            invoice = False
+            if record.payment_target == 'existing':
+                invoice = record.invoice_id
+            elif record.student_id and record.student_id.partner_id and record.fee_type_id:
+                # Cas 2 : création/complément d'une facture de l'année en cours
                 invoice = self.env['account.move'].search([
                     ('partner_id', '=', record.student_id.partner_id.id),
                     ('move_type', '=', 'out_invoice'),
@@ -211,27 +292,37 @@ class StudentFeePayment(models.TransientModel):
                     ('invoice_line_ids.product_id', '=', record.fee_type_id.product_id.id),
                 ], limit=1)
 
-                if invoice and record.amount > invoice.amount_residual:
-                    raise ValidationError(_(
-                        'Le montant du paiement (%s) ne peut pas dépasser le montant restant dû de la facture (%s).\n\n'
-                        'Montant restant dû: %s %s'
-                    ) % (
-                        record.amount,
-                        invoice.amount_residual,
-                        invoice.amount_residual,
-                        record.currency_id.symbol
-                    ))
+            if invoice and record.amount > invoice.amount_residual:
+                raise ValidationError(_(
+                    'Le montant du paiement (%s) ne peut pas dépasser le montant restant dû de la facture (%s).\n\n'
+                    'Montant restant dû: %s %s'
+                ) % (
+                    record.amount,
+                    invoice.amount_residual,
+                    invoice.amount_residual,
+                    record.currency_id.symbol
+                ))
 
     def action_process_payment(self):
-        """Traiter le paiement : créer la facture et enregistrer le paiement"""
+        """Traiter le paiement : créer/retrouver la facture et enregistrer le paiement"""
         self.ensure_one()
 
         # Vérifier que l'élève a un partner
         if not self.student_id.partner_id:
             self.student_id._create_partner()
 
-        # Chercher ou créer la facture
-        invoice = self._get_or_create_invoice()
+        if self.payment_target == 'existing':
+            # Régler une facture précise (y compris d'une année scolaire passée)
+            if not self.invoice_id:
+                raise ValidationError(_(
+                    'Veuillez sélectionner la facture à régler.'))
+            invoice = self.invoice_id
+        else:
+            # Créer (ou compléter) une facture pour l'année en cours
+            if not self.fee_type_id:
+                raise ValidationError(_(
+                    'Veuillez sélectionner le type de frais pour créer la facture.'))
+            invoice = self._get_or_create_invoice()
 
         # Enregistrer le paiement
         payment = self._register_payment(invoice)
@@ -243,15 +334,23 @@ class StudentFeePayment(models.TransientModel):
         """Récupérer ou créer la facture appropriée
         Une seule facture par type de frais et par élève par année scolaire
         """
-        # Chercher TOUTES les factures existantes pour ce type de frais, cet élève et cette année
-        # On inclut TOUTES les factures (payées ou non) pour éviter les doublons
+        # Chercher la facture existante pour ce type de frais et cette année
+        # d'inscription. On s'appuie sur le tag silina_student_id (précis) et,
+        # à défaut, sur le partenaire + produit (factures historiques).
         invoices = self.env['account.move'].search([
-            ('partner_id', '=', self.student_id.partner_id.id),
+            ('silina_student_id', '=', self.student_id.id),
+            ('silina_fee_type_id', '=', self.fee_type_id.id),
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
-            ('invoice_line_ids.product_id', '=', self.fee_type_id.product_id.id),
-            ('invoice_origin', 'ilike', self.student_id.academic_year_id.name),
         ], order='create_date desc')
+        if not invoices:
+            invoices = self.env['account.move'].search([
+                ('partner_id', '=', self.student_id.partner_id.id),
+                ('move_type', '=', 'out_invoice'),
+                ('state', '=', 'posted'),
+                ('invoice_line_ids.product_id', '=', self.fee_type_id.product_id.id),
+                ('invoice_origin', 'ilike', self.student_id.academic_year_id.name),
+            ], order='create_date desc')
 
         if invoices:
             invoice = invoices[0]  # Prendre la plus récente
@@ -313,6 +412,8 @@ class StudentFeePayment(models.TransientModel):
         invoice_vals = {
             'move_type': 'out_invoice',
             'partner_id': self.student_id.partner_id.id,
+            'silina_student_id': self.student_id.id,
+            'silina_fee_type_id': self.fee_type_id.id,
             'invoice_date': fields.Date.today(),
             'invoice_date_due': first_due_date or fields.Date.today(),
             'invoice_origin': f"{self.fee_type_id.name} - Année scolaire {self.student_id.academic_year_id.name}",
@@ -324,12 +425,15 @@ class StudentFeePayment(models.TransientModel):
         return invoice
 
     def _register_payment(self, invoice):
-        """Enregistrer le paiement sur la facture"""
+        """Enregistrer le paiement sur la facture.
+
+        Le partenaire est celui de la facture : pour une facture d'une année
+        antérieure, il peut différer du contact de l'inscription courante."""
         # Créer le paiement via le wizard standard d'Odoo
         payment_vals = {
             'payment_type': 'inbound',
             'partner_type': 'customer',
-            'partner_id': self.student_id.partner_id.id,
+            'partner_id': invoice.partner_id.id,
             'amount': self.amount,
             'date': self.payment_date,
             'journal_id': self._get_payment_journal().id,

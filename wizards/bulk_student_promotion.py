@@ -182,6 +182,7 @@ class BulkStudentPromotion(models.TransientModel):
                     'classroom_id': line.new_classroom_id.id,
                     'enrollment_date': self.promotion_date,
                     'state': 'enrolled',
+                    'previous_student_id': line.student_id.id,
                     'parent_ids': [(6, 0, line.student_id.parent_ids.ids)],
                     'father_name': line.student_id.father_name,
                     'mother_name': line.student_id.mother_name,

@@ -117,12 +117,22 @@ class GenerateFeeInvoices(models.TransientModel):
                 if not student.partner_id:
                     student._create_partner()
 
-                # Vérifier si des factures existent déjà pour cet élève
+                # Vérifier si des factures existent déjà pour CET élève (cette
+                # année d'inscription) et CE type de frais. On se limite à
+                # l'enregistrement élève courant : les factures d'une autre
+                # année n'empêchent donc pas la génération de la nouvelle année.
                 existing_invoices = self.env['account.move'].search([
-                    ('partner_id', '=', student.partner_id.id),
-                    ('invoice_line_ids.product_id', '=', self.fee_type_id.product_id.id),
+                    ('silina_student_id', '=', student.id),
+                    ('silina_fee_type_id', '=', self.fee_type_id.id),
                     ('state', 'in', ['draft', 'posted']),
                 ])
+                if not existing_invoices:
+                    # Repli pour les factures créées avant le tag (par partner)
+                    existing_invoices = self.env['account.move'].search([
+                        ('partner_id', '=', student.partner_id.id),
+                        ('invoice_line_ids.product_id', '=', self.fee_type_id.product_id.id),
+                        ('state', 'in', ['draft', 'posted']),
+                    ])
 
                 if existing_invoices:
                     errors.append(f"{student.name}: Des factures existent déjà")
@@ -135,6 +145,8 @@ class GenerateFeeInvoices(models.TransientModel):
                     invoice_vals = {
                         'move_type': 'out_invoice',
                         'partner_id': student.partner_id.id,  # Utiliser le contact de l'élève
+                        'silina_student_id': student.id,
+                        'silina_fee_type_id': self.fee_type_id.id,
                         'invoice_date': fields.Date.today(),
                         'invoice_date_due': due_date,
                         'invoice_origin': f"{self.fee_type_id.name} - {installment.name}",

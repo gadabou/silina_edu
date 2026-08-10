@@ -184,6 +184,49 @@ class Student(models.Model):
         readonly=True
     )
 
+    # Liaison entre les enregistrements d'un même élève d'une année à l'autre.
+    # Chaque année scolaire donne un enregistrement distinct ; ce lien permet
+    # de reconstituer le parcours et de retrouver les frais des années passées.
+    previous_student_id = fields.Many2one(
+        'silina.student',
+        string='Inscription année précédente',
+        readonly=True,
+        copy=False,
+        help="Enregistrement de l'élève pour l'année scolaire précédente."
+    )
+    next_student_ids = fields.One2many(
+        'silina.student',
+        'previous_student_id',
+        string='Inscriptions années suivantes'
+    )
+
+    # Suivi des frais scolaires (factures rattachées à cette année d'inscription)
+    fee_invoice_count = fields.Integer(
+        string='Nombre de factures',
+        compute='_compute_fee_summary'
+    )
+    fee_total = fields.Monetary(
+        string='Total facturé (année en cours)',
+        compute='_compute_fee_summary',
+        currency_field='currency_id'
+    )
+    fee_paid = fields.Monetary(
+        string='Total payé (année en cours)',
+        compute='_compute_fee_summary',
+        currency_field='currency_id'
+    )
+    fee_residual = fields.Monetary(
+        string='Reste à payer (année en cours)',
+        compute='_compute_fee_summary',
+        currency_field='currency_id'
+    )
+    previous_years_due = fields.Monetary(
+        string='Impayés années précédentes',
+        compute='_compute_fee_summary',
+        currency_field='currency_id',
+        help="Montant restant dû sur les factures des années scolaires antérieures."
+    )
+
     # Informations médicales
     allergies = fields.Text(string='Allergies')
     medical_conditions = fields.Text(string='Conditions médicales')
@@ -195,8 +238,10 @@ class Student(models.Model):
     active = fields.Boolean(default=True)
 
     _sql_constraints = [
-        ('registration_number_unique', 'unique(registration_number)',
-         'Le numéro de matricule doit être unique!'),
+        ('registration_number_year_unique',
+         'unique(registration_number, academic_year_id)',
+         "Ce matricule existe déjà pour cette année scolaire! "
+         "(Un même élève garde son matricule d'une année à l'autre.)"),
     ]
 
     @api.onchange('name')
@@ -267,6 +312,90 @@ class Student(models.Model):
                 record.age = age
             else:
                 record.age = 0
+
+    def _get_person_students(self):
+        """Retourne tous les enregistrements (toutes années) du même élève.
+
+        L'identité de l'élève est portée par le matricule, qui reste stable
+        d'une année à l'autre. Utile pour retrouver les factures d'un élève
+        à travers ses différentes années d'inscription."""
+        self.ensure_one()
+        if not self.registration_number or self.registration_number == _('Nouveau'):
+            return self
+        return self.search([('registration_number', '=', self.registration_number)])
+
+    def _get_fee_invoices(self, students=None):
+        """Factures de frais (clients) rattachées aux enregistrements donnés.
+
+        On combine le tag `silina_student_id` (posé par les assistants) et le
+        `partner_id` de l'élève, afin de couvrir aussi les factures créées
+        avant l'ajout du tag."""
+        students = students or self
+        partners = students.mapped('partner_id')
+        domain = [
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            '|',
+            ('silina_student_id', 'in', students.ids),
+            ('partner_id', 'in', partners.ids),
+        ]
+        if not partners and not students.ids:
+            return self.env['account.move']
+        return self.env['account.move'].search(domain)
+
+    @api.depends('partner_id', 'registration_number', 'academic_year_id')
+    def _compute_fee_summary(self):
+        for student in self:
+            # Factures de l'année d'inscription courante (ce partner = cette année)
+            current = student._get_fee_invoices(student)
+            student.fee_invoice_count = len(current)
+            student.fee_total = sum(current.mapped('amount_total'))
+            student.fee_residual = sum(current.mapped('amount_residual'))
+            student.fee_paid = student.fee_total - student.fee_residual
+
+            # Impayés des années antérieures (autres enregistrements du même élève)
+            others = student._get_person_students() - student
+            prev_due = 0.0
+            for other in others:
+                if (student.academic_year_id and other.academic_year_id
+                        and other.academic_year_id.date_start
+                        and student.academic_year_id.date_start
+                        and other.academic_year_id.date_start
+                        >= student.academic_year_id.date_start):
+                    continue  # on ne compte que les années réellement antérieures
+                inv = other._get_fee_invoices(other).filtered(
+                    lambda m: m.payment_state in ('not_paid', 'partial'))
+                prev_due += sum(inv.mapped('amount_residual'))
+            student.previous_years_due = prev_due
+
+    def action_view_fee_invoices(self):
+        """Ouvre toutes les factures de l'élève, toutes années confondues."""
+        self.ensure_one()
+        persons = self._get_person_students()
+        invoices = self._get_fee_invoices(persons)
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Factures de %s') % self.name,
+            'res_model': 'account.move',
+            'view_mode': 'list,form',
+            'domain': [('id', 'in', invoices.ids)],
+            'context': {
+                'create': False,
+                'search_default_group_by_silina_year': 1,
+            },
+        }
+
+    def action_open_fee_payment(self):
+        """Ouvre l'assistant de paiement des frais pour cet élève."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Payer les frais'),
+            'res_model': 'silina.student.fee.payment.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_student_id': self.id},
+        }
 
     @api.model_create_multi
     def create(self, vals_list):

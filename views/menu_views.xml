@@ -129,6 +129,12 @@
             action="account.action_move_out_invoice_type"
             sequence="1"/>
 
+        <menuitem id="menu_silina_fee_invoices"
+            name="Factures par année"
+            parent="menu_silina_edu_fees"
+            action="action_silina_fee_invoices"
+            sequence="4"/>
+
         <menuitem id="menu_payments"
             name="Paiements"
             parent="menu_silina_edu_fees"

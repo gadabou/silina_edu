@@ -27,7 +27,6 @@ class AcademicYear(models.Model):
     )
     date_end = fields.Date(
         string='Date de fin',
-        required=True,
         tracking=True
     )
     state = fields.Selection([
@@ -62,7 +61,7 @@ class AcademicYear(models.Model):
     @api.constrains('date_start', 'date_end')
     def _check_dates(self):
         for record in self:
-            if record.date_start >= record.date_end:
+            if record.date_end and record.date_start >= record.date_end:
                 raise ValidationError(_('La date de fin doit être postérieure à la date de début!'))
 
     @api.constrains('is_current')

@@ -55,10 +55,17 @@
                     <header>
                         <button name="action_enroll" string="Inscrire" type="object" invisible="state != 'draft'"/>
                         <button name="action_promote" string="Admettre" type="object" invisible="state != 'enrolled'"/>
+                        <button name="action_open_fee_payment" string="Payer les Frais" type="object" class="oe_highlight"/>
                         <button name="action_generate_report_card" string="Bulletin de Notes" type="object"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_fee_invoices" type="object"
+                                    class="oe_stat_button" icon="fa-file-text-o">
+                                <field name="fee_invoice_count" widget="statinfo" string="Factures"/>
+                            </button>
+                        </div>
                         <field name="image_1920" widget="image" class="oe_avatar"/>
                         <div class="oe_title">
                             <h1><field name="name" placeholder="NOM Prénom"/></h1>
@@ -77,9 +84,31 @@
                                 <field name="classroom_id"/>
                                 <field name="level_id"/>
                                 <field name="enrollment_date"/>
+                                <field name="previous_student_id"
+                                       invisible="not previous_student_id"/>
                             </group>
                         </group>
                         <notebook>
+                            <page string="Frais scolaires">
+                                <group>
+                                    <group string="Année en cours">
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="fee_total" widget="monetary"/>
+                                        <field name="fee_paid" widget="monetary"/>
+                                        <field name="fee_residual" widget="monetary"/>
+                                    </group>
+                                    <group string="Années antérieures">
+                                        <field name="previous_years_due" widget="monetary"
+                                               decoration-danger="previous_years_due &gt; 0"/>
+                                    </group>
+                                </group>
+                                <div class="alert alert-warning" role="alert"
+                                     invisible="previous_years_due &lt;= 0">
+                                    Cet élève a des frais impayés des années précédentes.
+                                    Utilisez le bouton « Payer les Frais » pour les régler,
+                                    même en cours de nouvelle année scolaire.
+                                </div>
+                            </page>
                             <page string="Informations de contact">
                                 <group>
                                     <group>
