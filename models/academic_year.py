@@ -104,6 +104,49 @@ class AcademicYear(models.Model):
         })
         return True
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        years = super().create(vals_list)
+        for year in years:
+            year._copy_classrooms_from_previous_year()
+        return years
+
+    def _copy_classrooms_from_previous_year(self):
+        """Recrée automatiquement, à la création d'une nouvelle année scolaire,
+        les classes de l'année précédente (structure uniquement, sans les élèves).
+
+        L'année précédente est celle dont la date de début est la plus récente
+        parmi celles antérieures à la nouvelle année. Le code de classe étant
+        unique par année, on conserve les mêmes noms et codes."""
+        self.ensure_one()
+        if self.env.context.get('skip_classroom_copy') or not self.date_start:
+            return
+        Classroom = self.env['silina.classroom']
+        # Ne rien faire si des classes existent déjà pour cette année
+        if Classroom.search_count([('academic_year_id', '=', self.id)]):
+            return
+        previous = self.search([
+            ('date_start', '<', self.date_start),
+            ('id', '!=', self.id),
+        ], order='date_start desc', limit=1)
+        if not previous:
+            return
+        for classroom in Classroom.search([('academic_year_id', '=', previous.id)]):
+            # Sécurité : éviter un doublon de code dans la nouvelle année
+            if Classroom.search_count([
+                ('code', '=', classroom.code),
+                ('academic_year_id', '=', self.id),
+            ]):
+                continue
+            Classroom.create({
+                'name': classroom.name,
+                'code': classroom.code,
+                'level_id': classroom.level_id.id,
+                'main_teacher_id': classroom.main_teacher_id.id or False,
+                'description': classroom.description,
+                'academic_year_id': self.id,
+            })
+
     @api.model
     def get_current_year(self):
         """Retourne l'année scolaire active"""
