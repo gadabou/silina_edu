@@ -47,6 +47,25 @@
             </field>
         </record>
 
+        <!-- Vue "Parcours scolaire" : toutes les inscriptions annuelles d'un même élève -->
+        <record id="view_student_career_tree" model="ir.ui.view">
+            <field name="name">silina.student.career.tree</field>
+            <field name="model">silina.student</field>
+            <field name="arch" type="xml">
+                <list string="Parcours scolaire" default_order="enrollment_date">
+                    <field name="academic_year_id"/>
+                    <field name="classroom_id"/>
+                    <field name="level_id"/>
+                    <field name="state"/>
+                    <field name="enrollment_date"/>
+                    <field name="currency_id" column_invisible="1"/>
+                    <field name="fee_total" widget="monetary" string="Total facturé"/>
+                    <field name="fee_paid" widget="monetary" string="Total payé"/>
+                    <field name="fee_residual" widget="monetary" string="Reste dû"/>
+                </list>
+            </field>
+        </record>
+
         <record id="view_student_form" model="ir.ui.view">
             <field name="name">silina.student.form</field>
             <field name="model">silina.student</field>
@@ -55,15 +74,25 @@
                     <header>
                         <button name="action_enroll" string="Inscrire" type="object" invisible="state != 'draft'"/>
                         <button name="action_promote" string="Admettre" type="object" invisible="state != 'enrolled'"/>
+                        <button name="action_reenroll" string="Réinscrire" type="object" invisible="next_student_ids"/>
                         <button name="action_open_fee_payment" string="Payer les Frais" type="object" class="oe_highlight"/>
                         <button name="action_generate_report_card" string="Bulletin de Notes" type="object"/>
                         <field name="state" widget="statusbar"/>
+                        <field name="next_student_ids" invisible="1"/>
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
+                            <button name="action_view_career" type="object"
+                                    class="oe_stat_button" icon="fa-graduation-cap">
+                                <field name="career_count" widget="statinfo" string="Parcours"/>
+                            </button>
                             <button name="action_view_fee_invoices" type="object"
                                     class="oe_stat_button" icon="fa-file-text-o">
                                 <field name="fee_invoice_count" widget="statinfo" string="Factures"/>
+                            </button>
+                            <button name="action_view_payments" type="object"
+                                    class="oe_stat_button" icon="fa-money">
+                                <field name="payment_count" widget="statinfo" string="Paiements"/>
                             </button>
                         </div>
                         <field name="image_1920" widget="image" class="oe_avatar"/>

@@ -44,6 +44,11 @@
                             <field name="current_classroom_ids" widget="many2many_tags"/>
                             <field name="student_ids" invisible="promotion_type != 'manual'"/>
                         </group>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="state != 'preview' or not skipped_info">
+                            <strong>⚠️ Élèves ignorés :</strong>
+                            <field name="skipped_info" readonly="1" nolabel="1"/>
+                        </div>
                         <notebook invisible="state != 'preview'">
                             <page string="Promotions">
                                 <field name="line_ids"/>

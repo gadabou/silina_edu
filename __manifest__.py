@@ -72,6 +72,7 @@
         'wizards/generate_report_card_views.xml',
         'wizards/generate_fee_invoices_views.xml',
         'wizards/student_fee_payment_views.xml',
+        'wizards/student_reenroll_views.xml',
 
         # Menus (loaded after wizards)
         'views/menu_views.xml',

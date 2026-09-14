@@ -70,6 +70,13 @@ class BulkStudentPromotion(models.TransientModel):
 
     notes = fields.Text(string='Notes')
 
+    skipped_info = fields.Text(
+        string='Élèves ignorés',
+        readonly=True,
+        help="Élèves sélectionnés mais absents de l'aperçu (ex: déjà au niveau "
+             "le plus élevé, aucune classe supérieure à proposer)."
+    )
+
     @api.depends('student_ids', 'line_ids')
     def _compute_student_count(self):
         for record in self:
@@ -106,11 +113,17 @@ class BulkStudentPromotion(models.TransientModel):
         # Créer les lignes de promotion
         self.line_ids.unlink()
         lines = []
+        skipped = []
 
         for student in self.student_ids:
             # Trouver le niveau suivant
             next_level = student.level_id.next_level_id
             if not next_level:
+                # Pas de classe supérieure (ex: dernière classe du cursus) :
+                # cet élève ne peut pas être "passé" par cet assistant. On le
+                # signale plutôt que de le faire disparaître silencieusement.
+                skipped.append(_('%s : aucun niveau supérieur défini après %s') % (
+                    student.name, student.level_id.name or _('son niveau actuel')))
                 continue
 
             # Trouver une classe disponible dans le nouveau niveau
@@ -131,6 +144,7 @@ class BulkStudentPromotion(models.TransientModel):
         if lines:
             self.env['silina.bulk.student.promotion.line'].create(lines)
 
+        self.skipped_info = '\n'.join(skipped) if skipped else False
         self.state = 'preview'
 
         return {
@@ -153,53 +167,73 @@ class BulkStudentPromotion(models.TransientModel):
         errors = []
 
         for line in self.line_ids:
+            if not line.new_classroom_id:
+                message = _('Aucune classe de destination')
+                errors.append(f"{line.student_id.name}: {message}")
+                line.state = 'error'
+                line.error_message = message
+                continue
+
             try:
-                if not line.new_classroom_id:
-                    errors.append(f"{line.student_id.name}: Aucune classe de destination")
-                    continue
+                # Chaque élève est traité dans son propre savepoint : si l'un
+                # d'eux échoue (ex: fiche déjà existante sur la nouvelle
+                # année), la transaction n'est pas invalidée pour les
+                # suivants et les promotions déjà faites restent valables.
+                with self.env.cr.savepoint():
+                    # Une fiche existe-t-elle déjà pour ce matricule sur la
+                    # nouvelle année (ex: réinscrit individuellement au
+                    # préalable) ?
+                    existing = self.env['silina.student'].search([
+                        ('registration_number', '=', line.student_id.registration_number),
+                        ('academic_year_id', '=', self.new_academic_year_id.id),
+                    ], limit=1)
+                    if existing:
+                        raise ValidationError(_(
+                            'Une fiche existe déjà pour ce matricule sur l\'année %s : %s.'
+                        ) % (self.new_academic_year_id.name, existing.name))
 
-                # Créer le nouvel enregistrement élève pour la nouvelle année
-                new_student_vals = {
-                    'first_name': line.student_id.first_name,
-                    'last_name': line.student_id.last_name,
-                    'registration_number': line.student_id.registration_number,
-                    'image_1920': line.student_id.image_1920,
-                    'gender': line.student_id.gender,
-                    'date_of_birth': line.student_id.date_of_birth,
-                    'place_of_birth': line.student_id.place_of_birth,
-                    'nationality': line.student_id.nationality.id,
-                    'blood_group': line.student_id.blood_group,
-                    'email': line.student_id.email,
-                    'phone': line.student_id.phone,
-                    'mobile': line.student_id.mobile,
-                    'street': line.student_id.street,
-                    'street2': line.student_id.street2,
-                    'city': line.student_id.city,
-                    'state_id': line.student_id.state_id.id,
-                    'zip': line.student_id.zip,
-                    'country_id': line.student_id.country_id.id,
-                    'academic_year_id': self.new_academic_year_id.id,
-                    'classroom_id': line.new_classroom_id.id,
-                    'enrollment_date': self.promotion_date,
-                    'state': 'enrolled',
-                    'previous_student_id': line.student_id.id,
-                    'parent_ids': [(6, 0, line.student_id.parent_ids.ids)],
-                    'father_name': line.student_id.father_name,
-                    'mother_name': line.student_id.mother_name,
-                    'guardian_name': line.student_id.guardian_name,
-                    'allergies': line.student_id.allergies,
-                    'medical_conditions': line.student_id.medical_conditions,
-                    'emergency_contact_name': line.student_id.emergency_contact_name,
-                    'emergency_contact_phone': line.student_id.emergency_contact_phone,
-                }
+                    # Créer le nouvel enregistrement élève pour la nouvelle année
+                    new_student_vals = {
+                        'first_name': line.student_id.first_name,
+                        'last_name': line.student_id.last_name,
+                        'registration_number': line.student_id.registration_number,
+                        'image_1920': line.student_id.image_1920,
+                        'gender': line.student_id.gender,
+                        'date_of_birth': line.student_id.date_of_birth,
+                        'place_of_birth': line.student_id.place_of_birth,
+                        'nationality': line.student_id.nationality.id,
+                        'blood_group': line.student_id.blood_group,
+                        'email': line.student_id.email,
+                        'phone': line.student_id.phone,
+                        'mobile': line.student_id.mobile,
+                        'street': line.student_id.street,
+                        'street2': line.student_id.street2,
+                        'city': line.student_id.city,
+                        'state_id': line.student_id.state_id.id,
+                        'zip': line.student_id.zip,
+                        'country_id': line.student_id.country_id.id,
+                        'academic_year_id': self.new_academic_year_id.id,
+                        'classroom_id': line.new_classroom_id.id,
+                        'enrollment_date': self.promotion_date,
+                        'state': 'enrolled',
+                        'previous_student_id': line.student_id.id,
+                        'parent_ids': [(6, 0, line.student_id.parent_ids.ids)],
+                        'father_name': line.student_id.father_name,
+                        'mother_name': line.student_id.mother_name,
+                        'guardian_name': line.student_id.guardian_name,
+                        'allergies': line.student_id.allergies,
+                        'medical_conditions': line.student_id.medical_conditions,
+                        'emergency_contact_name': line.student_id.emergency_contact_name,
+                        'emergency_contact_phone': line.student_id.emergency_contact_phone,
+                    }
 
-                new_student = self.env['silina.student'].create(new_student_vals)
+                    new_student = self.env['silina.student'].create(new_student_vals)
 
-                # Marquer l'ancien élève comme promu/gradué
-                if line.new_level_id:
-                    line.student_id.state = 'promoted'
-                else:
-                    line.student_id.state = 'graduated'
+                    # Marquer l'ancien élève comme promu/gradué
+                    if line.new_level_id:
+                        line.student_id.state = 'promoted'
+                    else:
+                        line.student_id.state = 'graduated'
 
                 promoted_count += 1
                 line.state = 'done'
@@ -231,6 +265,7 @@ class BulkStudentPromotion(models.TransientModel):
         """Retour à la configuration"""
         self.ensure_one()
         self.line_ids.unlink()
+        self.skipped_info = False
         self.state = 'draft'
 
         return {

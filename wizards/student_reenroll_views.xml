@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue Formulaire du Wizard de Réinscription -->
+        <record id="view_student_reenroll_wizard_form" model="ir.ui.view">
+            <field name="name">silina.student.reenroll.wizard.form</field>
+            <field name="model">silina.student.reenroll.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Réinscription d'un Élève">
+                    <sheet>
+                        <div class="alert alert-info" role="alert">
+                            <strong>ℹ️ Information :</strong> Cette action crée une <strong>nouvelle</strong> fiche
+                            pour l'élève sur l'année scolaire choisie, reliée à sa fiche actuelle. Les frais des
+                            années précédentes restent inchangés et les nouveaux frais seront rattachés à cette
+                            nouvelle fiche.
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="student_id" options="{'no_create': True, 'no_open': True}" readonly="1"/>
+                                <field name="registration_number"/>
+                                <field name="previous_academic_year_id"/>
+                            </group>
+                            <group>
+                                <field name="new_academic_year_id" options="{'no_create': True}"/>
+                                <field name="new_classroom_id" options="{'no_create': True}"/>
+                                <field name="enrollment_date"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <field name="notes" placeholder="Commentaires additionnels..."/>
+                        </group>
+                    </sheet>
+
+                    <footer>
+                        <button name="action_reenroll" string="Réinscrire" type="object" class="btn-primary"/>
+                        <button string="Annuler" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

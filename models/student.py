@@ -227,6 +227,18 @@ class Student(models.Model):
         help="Montant restant dû sur les factures des années scolaires antérieures."
     )
 
+    # Parcours scolaire (toutes les inscriptions du même élève, toutes années)
+    career_count = fields.Integer(
+        string="Années d'inscription",
+        compute='_compute_history_summary',
+        help="Nombre d'enregistrements d'inscription de cet élève, toutes années confondues."
+    )
+    payment_count = fields.Integer(
+        string='Nombre de paiements',
+        compute='_compute_history_summary',
+        help="Nombre de paiements de frais enregistrés pour cet élève, toutes années confondues."
+    )
+
     # Informations médicales
     allergies = fields.Text(string='Allergies')
     medical_conditions = fields.Text(string='Conditions médicales')
@@ -368,6 +380,22 @@ class Student(models.Model):
                 prev_due += sum(inv.mapped('amount_residual'))
             student.previous_years_due = prev_due
 
+    @api.depends('registration_number')
+    def _compute_history_summary(self):
+        for student in self:
+            persons = student._get_person_students()
+            student.career_count = len(persons)
+
+            partners = persons.mapped('partner_id')
+            if partners:
+                student.payment_count = self.env['account.payment'].search_count([
+                    ('partner_id', 'in', partners.ids),
+                    ('partner_type', '=', 'customer'),
+                    ('state', '=', 'posted'),
+                ])
+            else:
+                student.payment_count = 0
+
     def action_view_fee_invoices(self):
         """Ouvre toutes les factures de l'élève, toutes années confondues."""
         self.ensure_one()
@@ -385,6 +413,47 @@ class Student(models.Model):
             },
         }
 
+    def action_view_payments(self):
+        """Ouvre tous les paiements de frais de l'élève, toutes années confondues."""
+        self.ensure_one()
+        persons = self._get_person_students()
+        partners = persons.mapped('partner_id')
+        payments = self.env['account.payment'].search([
+            ('partner_id', 'in', partners.ids),
+            ('partner_type', '=', 'customer'),
+            ('state', '=', 'posted'),
+        ]) if partners else self.env['account.payment']
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Paiements de %s') % self.name,
+            'res_model': 'account.payment',
+            'view_mode': 'list,form',
+            'domain': [('id', 'in', payments.ids)],
+            'context': {
+                'create': False,
+                'group_by': ['date:year'],
+            },
+        }
+
+    def action_view_career(self):
+        """Ouvre le parcours scolaire complet de l'élève : toutes ses
+        inscriptions (une par année scolaire), de la plus ancienne à la
+        plus récente."""
+        self.ensure_one()
+        persons = self._get_person_students()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Parcours scolaire de %s') % self.name,
+            'res_model': 'silina.student',
+            'view_mode': 'list,form',
+            'views': [
+                (self.env.ref('silina_edu.view_student_career_tree').id, 'list'),
+                (False, 'form'),
+            ],
+            'domain': [('id', 'in', persons.ids)],
+            'context': {'create': False},
+        }
+
     def action_open_fee_payment(self):
         """Ouvre l'assistant de paiement des frais pour cet élève."""
         self.ensure_one()
@@ -392,6 +461,19 @@ class Student(models.Model):
             'type': 'ir.actions.act_window',
             'name': _('Payer les frais'),
             'res_model': 'silina.student.fee.payment.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_student_id': self.id},
+        }
+
+    def action_reenroll(self):
+        """Ouvre l'assistant de réinscription pour créer la fiche de cet
+        élève sur une nouvelle année scolaire (élève ancien ou en cours)."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Réinscrire l\'élève'),
+            'res_model': 'silina.student.reenroll.wizard',
             'view_mode': 'form',
             'target': 'new',
             'context': {'default_student_id': self.id},
