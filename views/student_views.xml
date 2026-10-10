@@ -69,6 +69,7 @@
             <field name="model">silina.student</field>
             <field name="arch" type="xml">
                 <list string="Parcours scolaire" default_order="enrollment_date">
+                    <field name="name"/>
                     <field name="academic_year_id"/>
                     <field name="classroom_id"/>
                     <field name="level_id"/>

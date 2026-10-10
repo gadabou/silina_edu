@@ -13,9 +13,18 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 # Configuration (surchargeable par variables d'environnement)
 # ---------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Charge le fichier .env (DEPLOY_DIR = dossier de déploiement contenant addons/)
+if [[ -f "$SCRIPT_DIR/.env" ]]; then
+    set -a; . "$SCRIPT_DIR/.env"; set +a
+fi
+: "${DEPLOY_DIR:?DEPLOY_DIR non défini : renseigne-le dans $SCRIPT_DIR/.env}"
+[[ -d "$DEPLOY_DIR" ]] || { echo "Dossier de déploiement introuvable : $DEPLOY_DIR" >&2; exit 1; }
+
 MODULE_NAME="${MODULE_NAME:-silina_edu}"
 MODULE_SRC="${MODULE_SRC:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
-INSTANCE_DIR="${INSTANCE_DIR:-/home/doctorpy/Projects/perso/odoo_apps/odoo1}"
+INSTANCE_DIR="$DEPLOY_DIR"
 ODOO_SERVICE="${ODOO_SERVICE:-odoo}"
 ODOO_CONTAINER="${ODOO_CONTAINER:-odoo1_app}"
 DB_CONTAINER="${DB_CONTAINER:-odoo1_db}"
@@ -289,7 +298,11 @@ fi
 # ---------------------------------------------------------------------------
 if (( DO_RESTART )); then
     step "Redémarrage du service Odoo"
-    run dc restart "$ODOO_SERVICE"
+    if (( DRY_RUN )); then
+        info "[dry-run] cd $DEPLOY_DIR && docker compose restart $ODOO_SERVICE"
+    else
+        (cd "$DEPLOY_DIR" && $SUDO docker compose restart "$ODOO_SERVICE")
+    fi
     if ! (( DRY_RUN )); then
         for i in $(seq 1 30); do
             if dk exec "$ODOO_CONTAINER" curl -sf -o /dev/null http://localhost:8069/web/login; then
