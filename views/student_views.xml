@@ -47,6 +47,22 @@
             </field>
         </record>
 
+        <!-- Recherche : filtrer les élèves par année scolaire -->
+        <record id="view_student_search" model="ir.ui.view">
+            <field name="name">silina.student.search</field>
+            <field name="model">silina.student</field>
+            <field name="arch" type="xml">
+                <search string="Élèves">
+                    <field name="name" string="Nom complet"/>
+                    <field name="registration_number" string="Matricule"/>
+                    <field name="academic_year_id"/>
+                    <separator/>
+                    <filter name="group_by_year" string="Année scolaire"
+                            context="{'group_by': 'academic_year_id'}"/>
+                </search>
+            </field>
+        </record>
+
         <!-- Vue "Parcours scolaire" : toutes les inscriptions annuelles d'un même élève -->
         <record id="view_student_career_tree" model="ir.ui.view">
             <field name="name">silina.student.career.tree</field>

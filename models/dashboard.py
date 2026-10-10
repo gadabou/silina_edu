@@ -130,9 +130,18 @@ class Dashboard(models.Model):
             ]
 
             if record.current_academic_year_id:
-                # Filtrer par année scolaire si disponible
-                domain.append(('invoice_date', '>=', record.current_academic_year_id.date_start))
-                domain.append(('invoice_date', '<=', record.current_academic_year_id.date_end))
+                # Factures rattachées à l'année scolaire (via l'élève). Sans élève,
+                # on se rabat sur la date de facture pour ne pas perdre ces factures.
+                year = record.current_academic_year_id
+                domain += [
+                    '|',
+                    ('silina_academic_year_id', '=', year.id),
+                    '&',
+                    ('silina_academic_year_id', '=', False),
+                    '&',
+                    ('invoice_date', '>=', year.date_start),
+                    ('invoice_date', '<=', year.date_end),
+                ]
 
             Invoice = self.env['account.move']
             invoices = Invoice.search(domain)
