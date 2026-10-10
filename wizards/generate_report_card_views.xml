@@ -6,40 +6,66 @@
             <field name="name">silina.generate.report.card.wizard.form</field>
             <field name="model">silina.generate.report.card.wizard</field>
             <field name="arch" type="xml">
-                <form string="Générer Bulletins de Notes">
+                <form string="Générer Bulletins / Livrets">
                     <sheet>
                         <group>
                             <group>
                                 <field name="academic_year_id"
                                        options="{'no_create': True, 'no_open': True}"
                                        placeholder="Sélectionner l'année scolaire..."/>
-                                <field name="generation_type" widget="radio"/>
+                                <field name="report_scope" widget="radio"/>
+                                <field name="period_id"
+                                       invisible="report_scope != 'period'"
+                                       required="report_scope == 'period'"
+                                       options="{'no_create': True, 'no_open': True}"/>
                             </group>
                             <group>
-                                <field name="template_type" widget="radio"/>
+                                <field name="generation_type" widget="radio"/>
                                 <field name="language"/>
+                                <field name="recompute"/>
                             </group>
                         </group>
                         <group>
                             <field name="classroom_ids"
                                    invisible="generation_type != 'classroom'"
+                                   required="generation_type == 'classroom'"
                                    widget="many2many_tags"
                                    options="{'no_create': True}"/>
                             <field name="student_ids"
                                    invisible="generation_type != 'student'"
+                                   required="generation_type == 'student'"
                                    widget="many2many_tags"
-                                   domain="[('state', '=', 'enrolled')]"
+                                   domain="[('academic_year_id', '=', academic_year_id), ('state', 'not in', ('draft', 'expelled'))]"
                                    options="{'no_create': True}"/>
                         </group>
                         <group>
-                            <field name="include_rank"/>
-                            <field name="include_statistics"/>
-                            <field name="include_comments"/>
+                            <group>
+                                <field name="include_rank"/>
+                                <field name="include_statistics"/>
+                                <field name="include_comments"/>
+                                <field name="bulletin_stub"/>
+                            </group>
+                            <group>
+                                <field name="bulletin_count"/>
+                                <field name="livret_count"/>
+                            </group>
                         </group>
+                        <div class="alert alert-info" role="alert"
+                             invisible="bulletin_count == 0 or livret_count == 0">
+                            La sélection mélange collège/lycée (bulletins, A4 portrait) et
+                            crèche/préscolaire/primaire (livrets, A4 paysage) : un PDF par type.
+                        </div>
                     </sheet>
                     <footer>
                         <button string="Aperçu" name="action_generate_preview" type="object" class="btn-secondary"/>
-                        <button string="Générer" name="action_generate" type="object" class="btn-primary"/>
+                        <button string="Générer" name="action_generate" type="object" class="btn-primary"
+                                invisible="bulletin_count > 0 and livret_count > 0"/>
+                        <button string="Bulletins (collège/lycée)" name="action_generate_bulletins" type="object"
+                                class="btn-primary"
+                                invisible="bulletin_count == 0 or livret_count == 0"/>
+                        <button string="Livrets (crèche/préscolaire/primaire)" name="action_generate_livrets"
+                                type="object" class="btn-primary"
+                                invisible="bulletin_count == 0 or livret_count == 0"/>
                         <button string="Annuler" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
@@ -47,7 +73,7 @@
         </record>
 
         <record id="action_generate_report_card_wizard" model="ir.actions.act_window">
-            <field name="name">Générer Bulletins de Notes</field>
+            <field name="name">Générer Bulletins / Livrets</field>
             <field name="res_model">silina.generate.report.card.wizard</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>

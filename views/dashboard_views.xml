@@ -35,9 +35,10 @@
             <field name="name">silina.dashboard.form</field>
             <field name="model">silina.dashboard</field>
             <field name="arch" type="xml">
-                <form string="Tableau de Bord">
+                <form string="Tableau de Bord" create="false" edit="false" delete="false">
                     <header>
-                        <button name="action_refresh" string="Actualiser" type="object" class="btn-primary"/>
+                        <button name="action_refresh" string="Actualiser" type="object" class="btn-primary"
+                                groups="silina_edu.group_silina_edu_coordinator"/>
                         <field name="current_academic_year_id" widget="selection" options="{'no_create': True, 'no_open': True}" readonly="1"/>
                     </header>
                     <sheet>

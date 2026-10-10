@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ===================== Absences ===================== -->
+        <record id="view_discipline_absence_list" model="ir.ui.view">
+            <field name="name">silina.discipline.absence.list</field>
+            <field name="model">silina.discipline.absence</field>
+            <field name="arch" type="xml">
+                <list string="Absences" decoration-success="justified">
+                    <field name="date"/>
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="absence_type"/>
+                    <field name="justified"/>
+                    <field name="motif"/>
+                    <field name="period_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_discipline_absence_form" model="ir.ui.view">
+            <field name="name">silina.discipline.absence.form</field>
+            <field name="model">silina.discipline.absence</field>
+            <field name="arch" type="xml">
+                <form string="Absence">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="student_id"/>
+                                <field name="date"/>
+                                <field name="absence_type"/>
+                            </group>
+                            <group>
+                                <field name="justified"/>
+                                <field name="period_id"/>
+                                <field name="academic_year_id"/>
+                                <field name="classroom_id"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="motif"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_discipline_absence_search" model="ir.ui.view">
+            <field name="name">silina.discipline.absence.search</field>
+            <field name="model">silina.discipline.absence</field>
+            <field name="arch" type="xml">
+                <search string="Absences">
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="period_id"/>
+                    <field name="academic_year_id"/>
+                    <filter name="justified" string="Justifiées" domain="[('justified', '=', True)]"/>
+                    <filter name="unjustified" string="Injustifiées" domain="[('justified', '=', False)]"/>
+                    <separator/>
+                    <filter name="group_student" string="Élève" context="{'group_by': 'student_id'}"/>
+                    <filter name="group_classroom" string="Classe" context="{'group_by': 'classroom_id'}"/>
+                    <filter name="group_period" string="Période" context="{'group_by': 'period_id'}"/>
+                    <filter name="group_type" string="Type" context="{'group_by': 'absence_type'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_discipline_absence" model="ir.actions.act_window">
+            <field name="name">Absences</field>
+            <field name="res_model">silina.discipline.absence</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <!-- ===================== Retards ===================== -->
+        <record id="view_discipline_late_list" model="ir.ui.view">
+            <field name="name">silina.discipline.late.list</field>
+            <field name="model">silina.discipline.late</field>
+            <field name="arch" type="xml">
+                <list string="Retards" decoration-success="justified">
+                    <field name="date"/>
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="minutes"/>
+                    <field name="justified"/>
+                    <field name="motif"/>
+                    <field name="period_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_discipline_late_form" model="ir.ui.view">
+            <field name="name">silina.discipline.late.form</field>
+            <field name="model">silina.discipline.late</field>
+            <field name="arch" type="xml">
+                <form string="Retard">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="student_id"/>
+                                <field name="date"/>
+                                <field name="minutes"/>
+                            </group>
+                            <group>
+                                <field name="justified"/>
+                                <field name="period_id"/>
+                                <field name="academic_year_id"/>
+                                <field name="classroom_id"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="motif"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_discipline_late_search" model="ir.ui.view">
+            <field name="name">silina.discipline.late.search</field>
+            <field name="model">silina.discipline.late</field>
+            <field name="arch" type="xml">
+                <search string="Retards">
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="period_id"/>
+                    <field name="academic_year_id"/>
+                    <filter name="justified" string="Justifiés" domain="[('justified', '=', True)]"/>
+                    <filter name="unjustified" string="Injustifiés" domain="[('justified', '=', False)]"/>
+                    <separator/>
+                    <filter name="group_student" string="Élève" context="{'group_by': 'student_id'}"/>
+                    <filter name="group_classroom" string="Classe" context="{'group_by': 'classroom_id'}"/>
+                    <filter name="group_period" string="Période" context="{'group_by': 'period_id'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_discipline_late" model="ir.actions.act_window">
+            <field name="name">Retards</field>
+            <field name="res_model">silina.discipline.late</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <!-- ===================== Types de sanction ===================== -->
+        <record id="view_discipline_sanction_type_list" model="ir.ui.view">
+            <field name="name">silina.discipline.sanction.type.list</field>
+            <field name="model">silina.discipline.sanction.type</field>
+            <field name="arch" type="xml">
+                <list string="Types de sanction">
+                    <field name="severity"/>
+                    <field name="name"/>
+                    <field name="points_deducted"/>
+                    <field name="is_exclusion"/>
+                    <field name="active" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_discipline_sanction_type_form" model="ir.ui.view">
+            <field name="name">silina.discipline.sanction.type.form</field>
+            <field name="model">silina.discipline.sanction.type</field>
+            <field name="arch" type="xml">
+                <form string="Type de sanction">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="severity"/>
+                            </group>
+                            <group>
+                                <field name="points_deducted"/>
+                                <field name="is_exclusion"/>
+                                <field name="active"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_discipline_sanction_type_search" model="ir.ui.view">
+            <field name="name">silina.discipline.sanction.type.search</field>
+            <field name="model">silina.discipline.sanction.type</field>
+            <field name="arch" type="xml">
+                <search string="Types de sanction">
+                    <field name="name"/>
+                    <filter name="exclusion" string="Exclusions" domain="[('is_exclusion', '=', True)]"/>
+                    <filter name="inactive" string="Archivés" domain="[('active', '=', False)]"/>
+                    <filter name="group_severity" string="Gravité" context="{'group_by': 'severity'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_discipline_sanction_type" model="ir.actions.act_window">
+            <field name="name">Types de sanction</field>
+            <field name="res_model">silina.discipline.sanction.type</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <!-- ===================== Sanctions ===================== -->
+        <record id="view_discipline_sanction_list" model="ir.ui.view">
+            <field name="name">silina.discipline.sanction.list</field>
+            <field name="model">silina.discipline.sanction</field>
+            <field name="arch" type="xml">
+                <list string="Sanctions" decoration-muted="state in ('lifted', 'cancelled')"
+                      decoration-danger="is_exclusion and state in ('pronounced', 'executed')">
+                    <field name="date"/>
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="type_id"/>
+                    <field name="points_deducted"/>
+                    <field name="period_id"/>
+                    <field name="state" widget="badge"/>
+                    <field name="is_exclusion" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_discipline_sanction_form" model="ir.ui.view">
+            <field name="name">silina.discipline.sanction.form</field>
+            <field name="model">silina.discipline.sanction</field>
+            <field name="arch" type="xml">
+                <form string="Sanction">
+                    <header>
+                        <button name="action_execute" string="Marquer exécutée" type="object"
+                                class="oe_highlight" invisible="state != 'pronounced'"/>
+                        <button name="action_lift" string="Lever la sanction" type="object"
+                                invisible="state not in ('pronounced', 'executed')"/>
+                        <button name="action_cancel" string="Annuler" type="object"
+                                invisible="state in ('lifted', 'cancelled')"/>
+                        <button name="action_reset" string="Remettre en prononcée" type="object"
+                                invisible="state not in ('lifted', 'cancelled')"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="pronounced,executed,lifted"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="student_id"/>
+                                <field name="type_id"/>
+                                <field name="points_deducted"/>
+                            </group>
+                            <group>
+                                <field name="date"/>
+                                <field name="date_end"/>
+                                <field name="period_id"/>
+                                <field name="academic_year_id"/>
+                                <field name="is_exclusion" invisible="1"/>
+                            </group>
+                        </group>
+                        <group string="Motif">
+                            <field name="reason" nolabel="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_discipline_sanction_search" model="ir.ui.view">
+            <field name="name">silina.discipline.sanction.search</field>
+            <field name="model">silina.discipline.sanction</field>
+            <field name="arch" type="xml">
+                <search string="Sanctions">
+                    <field name="student_id"/>
+                    <field name="type_id"/>
+                    <field name="classroom_id"/>
+                    <field name="period_id"/>
+                    <field name="academic_year_id"/>
+                    <filter name="active_sanctions" string="En cours"
+                            domain="[('state', 'in', ('pronounced', 'executed'))]"/>
+                    <filter name="exclusions" string="Exclusions" domain="[('is_exclusion', '=', True)]"/>
+                    <separator/>
+                    <filter name="group_student" string="Élève" context="{'group_by': 'student_id'}"/>
+                    <filter name="group_type" string="Type" context="{'group_by': 'type_id'}"/>
+                    <filter name="group_period" string="Période" context="{'group_by': 'period_id'}"/>
+                    <filter name="group_state" string="Statut" context="{'group_by': 'state'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_discipline_sanction" model="ir.actions.act_window">
+            <field name="name">Sanctions</field>
+            <field name="res_model">silina.discipline.sanction</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <!-- ===================== Notes de conduite ===================== -->
+        <record id="view_discipline_conduct_list" model="ir.ui.view">
+            <field name="name">silina.discipline.conduct.list</field>
+            <field name="model">silina.discipline.conduct</field>
+            <field name="arch" type="xml">
+                <list string="Notes de conduite" decoration-danger="appreciation == 'worrying'">
+                    <field name="period_id"/>
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="base_score"/>
+                    <field name="points_deducted"/>
+                    <field name="conduct_score"/>
+                    <field name="appreciation"/>
+                    <field name="absences_count"/>
+                    <field name="absences_unjustified_count"/>
+                    <field name="lates_count"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_discipline_conduct_form" model="ir.ui.view">
+            <field name="name">silina.discipline.conduct.form</field>
+            <field name="model">silina.discipline.conduct</field>
+            <field name="arch" type="xml">
+                <form string="Note de conduite">
+                    <header>
+                        <button name="action_recompute" string="Recalculer" type="object"
+                                class="oe_highlight"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="student_id"/>
+                                <field name="academic_year_id"/>
+                                <field name="period_id"/>
+                            </group>
+                            <group>
+                                <field name="base_score"/>
+                                <field name="points_deducted"/>
+                                <field name="conduct_score"/>
+                                <field name="appreciation"/>
+                            </group>
+                        </group>
+                        <group string="Assiduité">
+                            <field name="absences_count"/>
+                            <field name="absences_unjustified_count"/>
+                            <field name="lates_count"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_discipline_conduct_search" model="ir.ui.view">
+            <field name="name">silina.discipline.conduct.search</field>
+            <field name="model">silina.discipline.conduct</field>
+            <field name="arch" type="xml">
+                <search string="Notes de conduite">
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="period_id"/>
+                    <field name="academic_year_id"/>
+                    <filter name="worrying" string="Préoccupantes"
+                            domain="[('appreciation', '=', 'worrying')]"/>
+                    <separator/>
+                    <filter name="group_period" string="Période" context="{'group_by': 'period_id'}"/>
+                    <filter name="group_classroom" string="Classe" context="{'group_by': 'classroom_id'}"/>
+                    <filter name="group_appreciation" string="Appréciation" context="{'group_by': 'appreciation'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_discipline_conduct" model="ir.actions.act_window">
+            <field name="name">Notes de conduite</field>
+            <field name="res_model">silina.discipline.conduct</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <!-- ===================== Formulaire élève : onglet Discipline ===================== -->
+        <record id="view_student_form_discipline" model="ir.ui.view">
+            <field name="name">silina.student.form.discipline</field>
+            <field name="model">silina.student</field>
+            <field name="inherit_id" ref="silina_edu.view_student_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_absences" type="object"
+                            class="oe_stat_button" icon="fa-calendar-times-o">
+                        <field name="absence_count" widget="statinfo" string="Absences"/>
+                    </button>
+                    <button name="action_view_lates" type="object"
+                            class="oe_stat_button" icon="fa-clock-o">
+                        <field name="late_count" widget="statinfo" string="Retards"/>
+                    </button>
+                    <button name="action_view_sanctions" type="object"
+                            class="oe_stat_button" icon="fa-gavel">
+                        <field name="sanction_count" widget="statinfo" string="Sanctions"/>
+                    </button>
+                </xpath>
+                <xpath expr="//notebook" position="inside">
+                    <page string="Discipline" name="discipline">
+                        <group string="Notes de conduite">
+                            <field name="conduct_ids" nolabel="1" readonly="1">
+                                <list>
+                                    <field name="period_id"/>
+                                    <field name="conduct_score"/>
+                                    <field name="appreciation"/>
+                                    <field name="absences_count"/>
+                                    <field name="absences_unjustified_count"/>
+                                    <field name="lates_count"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Absences">
+                            <field name="absence_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="absence_type"/>
+                                    <field name="justified"/>
+                                    <field name="motif"/>
+                                    <field name="period_id"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Retards">
+                            <field name="late_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="minutes"/>
+                                    <field name="justified"/>
+                                    <field name="motif"/>
+                                    <field name="period_id"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Sanctions">
+                            <field name="sanction_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="type_id"/>
+                                    <field name="date_end"/>
+                                    <field name="reason"/>
+                                    <field name="points_deducted"/>
+                                    <field name="state"/>
+                                    <field name="period_id"/>
+                                </list>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

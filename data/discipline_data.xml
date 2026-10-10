@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="sanction_type_warning" model="silina.discipline.sanction.type">
+            <field name="name">Avertissement</field>
+            <field name="severity">1</field>
+            <field name="points_deducted">0.5</field>
+            <field name="is_exclusion" eval="False"/>
+        </record>
+        <record id="sanction_type_blame" model="silina.discipline.sanction.type">
+            <field name="name">Blâme</field>
+            <field name="severity">2</field>
+            <field name="points_deducted">1.0</field>
+            <field name="is_exclusion" eval="False"/>
+        </record>
+        <record id="sanction_type_detention" model="silina.discipline.sanction.type">
+            <field name="name">Retenue</field>
+            <field name="severity">3</field>
+            <field name="points_deducted">2.0</field>
+            <field name="is_exclusion" eval="False"/>
+        </record>
+        <record id="sanction_type_temp_exclusion" model="silina.discipline.sanction.type">
+            <field name="name">Exclusion temporaire</field>
+            <field name="severity">4</field>
+            <field name="points_deducted">4.0</field>
+            <field name="is_exclusion" eval="True"/>
+        </record>
+        <record id="sanction_type_final_exclusion" model="silina.discipline.sanction.type">
+            <field name="name">Exclusion définitive</field>
+            <field name="severity">5</field>
+            <field name="points_deducted">6.0</field>
+            <field name="is_exclusion" eval="True"/>
+        </record>
+    </data>
+</odoo>

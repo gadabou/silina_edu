@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Liste : colonnes et boutons de décision -->
+        <record id="view_annual_result_list_decision" model="ir.ui.view">
+            <field name="name">silina.annual.result.list.decision</field>
+            <field name="model">silina.annual.result</field>
+            <field name="inherit_id" ref="silina_edu.view_annual_result_list"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="attributes">
+                    <attribute name="decoration-success">final_decision in ('passed', 'indulgence')</attribute>
+                    <attribute name="decoration-danger">final_decision == 'repeat'</attribute>
+                </xpath>
+                <xpath expr="//header" position="inside">
+                    <button name="action_admit" string="Admettre" type="object"
+                            groups="silina_edu.group_silina_edu_coordinator"/>
+                    <button name="action_admit_indulgence" string="Admettre par indulgence" type="object"
+                            groups="silina_edu.group_silina_edu_coordinator"/>
+                    <button name="action_make_repeat" string="Faire redoubler" type="object"
+                            groups="silina_edu.group_silina_edu_coordinator"/>
+                </xpath>
+                <xpath expr="//field[@name='mention']" position="after">
+                    <field name="decision" optional="hide"/>
+                    <field name="final_decision" widget="badge"
+                           decoration-success="final_decision in ('passed', 'indulgence')"
+                           decoration-danger="final_decision == 'repeat'"
+                           decoration-warning="final_decision == 'pending'"/>
+                    <field name="promotion_state" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Formulaire -->
+        <record id="view_annual_result_form_decision" model="ir.ui.view">
+            <field name="name">silina.annual.result.form.decision</field>
+            <field name="model">silina.annual.result</field>
+            <field name="inherit_id" ref="silina_edu.view_annual_result_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_admit" string="Admettre" type="object"
+                            groups="silina_edu.group_silina_edu_coordinator"
+                            invisible="promotion_state == 'done'"/>
+                    <button name="action_admit_indulgence" string="Admettre par indulgence" type="object"
+                            groups="silina_edu.group_silina_edu_coordinator"
+                            invisible="promotion_state == 'done'"/>
+                    <button name="action_make_repeat" string="Faire redoubler" type="object"
+                            groups="silina_edu.group_silina_edu_coordinator"
+                            invisible="promotion_state == 'done'"/>
+                    <button name="action_reset_decision" string="Revenir à la décision automatique" type="object"
+                            groups="silina_edu.group_silina_edu_coordinator"
+                            invisible="not manual_decision or promotion_state == 'done'"/>
+                </xpath>
+                <xpath expr="//group[@name='class_stats_group']" position="before">
+                    <group string="Décision de passage">
+                        <group>
+                            <field name="decision"/>
+                            <!-- Éditable pour coordinateur et plus, lecture seule pour les autres -->
+                            <field name="manual_decision" id="manual_decision_rw"
+                                   groups="silina_edu.group_silina_edu_coordinator"
+                                   readonly="promotion_state == 'done'"/>
+                            <field name="manual_decision" id="manual_decision_ro"
+                                   groups="!silina_edu.group_silina_edu_coordinator"
+                                   readonly="1"/>
+                            <field name="final_decision"/>
+                            <field name="promotion_state"/>
+                        </group>
+                        <group>
+                            <field name="decision_reason" id="decision_reason_rw"
+                                   groups="silina_edu.group_silina_edu_coordinator"
+                                   readonly="promotion_state == 'done'"
+                                   required="manual_decision and manual_decision != decision and decision != 'pending'"/>
+                            <field name="decision_reason" id="decision_reason_ro"
+                                   groups="!silina_edu.group_silina_edu_coordinator"
+                                   readonly="1"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Recherche : filtres et regroupements -->
+        <record id="view_annual_result_search_decision" model="ir.ui.view">
+            <field name="name">silina.annual.result.search.decision</field>
+            <field name="model">silina.annual.result</field>
+            <field name="inherit_id" ref="silina_edu.view_annual_result_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='with_average']" position="after">
+                    <separator/>
+                    <filter string="Admis" name="filter_passed" domain="[('final_decision', '=', 'passed')]"/>
+                    <filter string="Admis par indulgence" name="filter_indulgence" domain="[('final_decision', '=', 'indulgence')]"/>
+                    <filter string="Redouble" name="filter_repeat" domain="[('final_decision', '=', 'repeat')]"/>
+                    <filter string="Décision en attente" name="filter_pending" domain="[('final_decision', '=', 'pending')]"/>
+                    <separator/>
+                    <filter string="Passage non traité" name="filter_promo_todo" domain="[('promotion_state', '=', 'todo')]"/>
+                    <filter string="Passage traité" name="filter_promo_done" domain="[('promotion_state', '=', 'done')]"/>
+                </xpath>
+                <xpath expr="//filter[@name='group_level']" position="after">
+                    <filter string="Décision" name="group_decision" context="{'group_by': 'final_decision'}"/>
+                    <filter string="Passage" name="group_promotion_state" context="{'group_by': 'promotion_state'}"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

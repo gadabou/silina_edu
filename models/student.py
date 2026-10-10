@@ -312,6 +312,26 @@ class Student(models.Model):
         elif self.first_name:
             self.name = self.first_name
 
+    is_repeater = fields.Boolean(
+        string='Redoublant', compute='_compute_is_repeater',
+        help="Vrai si l'élève (même matricule) était déjà inscrit dans le même niveau "
+             "lors d'une année scolaire antérieure.")
+
+    def _compute_is_repeater(self):
+        for student in self:
+            repeater = False
+            year = student.academic_year_id
+            if student.level_id and year.date_start and student.registration_number \
+                    and student.registration_number != _('Nouveau'):
+                others = student.search([
+                    ('registration_number', '=', student.registration_number),
+                    ('id', '!=', student.id),
+                    ('level_id', '=', student.level_id.id),
+                    ('academic_year_id.date_start', '<', year.date_start),
+                ], limit=1)
+                repeater = bool(others)
+            student.is_repeater = repeater
+
     @api.depends('date_of_birth')
     def _compute_age(self):
         today = date.today()

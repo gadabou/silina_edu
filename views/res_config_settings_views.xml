@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_res_config_settings_silina_edu" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.silina.edu</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="inside">
+                    <app data-string="Silina Edu" string="Silina Edu" name="silina_edu">
+                        <block title="Règles de passage">
+                            <setting string="Moyenne de passage" help="Moyenne annuelle minimale pour être admis en classe supérieure.">
+                                <field name="silina_pass_average"/>
+                            </setting>
+                            <setting string="Moyenne d'admission par indulgence" help="Moyenne annuelle minimale pour une admission par indulgence (doit être inférieure ou égale à la moyenne de passage).">
+                                <field name="silina_indulgence_average"/>
+                            </setting>
+                            <setting string="Barème" help="Note maximale de référence (notes ramenées sur ce barème).">
+                                <field name="silina_max_mark"/>
+                            </setting>
+                        </block>
+                        <block title="Livret (crèche, préscolaire, primaire)">
+                            <setting string="Mode d'évaluation - Crèche">
+                                <field name="silina_livret_mode_daycare"/>
+                            </setting>
+                            <setting string="Mode d'évaluation - Préscolaire">
+                                <field name="silina_livret_mode_preschool"/>
+                            </setting>
+                            <setting string="Mode d'évaluation - Primaire">
+                                <field name="silina_livret_mode_primary"/>
+                            </setting>
+                            <setting string="Afficher le rang - Crèche">
+                                <field name="silina_show_rank_daycare"/>
+                            </setting>
+                            <setting string="Afficher le rang - Préscolaire">
+                                <field name="silina_show_rank_preschool"/>
+                            </setting>
+                        </block>
+                        <block title="Échelle des mentions (moyenne minimale)">
+                            <setting string="Excellent">
+                                <field name="silina_mention_excellent"/>
+                            </setting>
+                            <setting string="Très bien">
+                                <field name="silina_mention_very_good"/>
+                            </setting>
+                            <setting string="Bien">
+                                <field name="silina_mention_good"/>
+                            </setting>
+                            <setting string="Assez bien">
+                                <field name="silina_mention_fairly_good"/>
+                            </setting>
+                            <setting string="Passable">
+                                <field name="silina_mention_passable"/>
+                            </setting>
+                        </block>
+                        <block title="En-tête officiel et signatures">
+                            <setting string="Nom du directeur" help="Affiché sous « Le Directeur » sur les bulletins et livrets.">
+                                <field name="silina_director_name"/>
+                            </setting>
+                            <setting string="En-tête - ligne 1">
+                                <field name="silina_ministry_line1"/>
+                            </setting>
+                            <setting string="En-tête - ligne 2">
+                                <field name="silina_ministry_line2"/>
+                            </setting>
+                            <setting string="En-tête - devise">
+                                <field name="silina_ministry_line3"/>
+                            </setting>
+                        </block>
+                        <block title="Groupes de matières du bulletin">
+                            <setting string="Groupe A">
+                                <field name="silina_group_label_a"/>
+                            </setting>
+                            <setting string="Groupe B">
+                                <field name="silina_group_label_b"/>
+                            </setting>
+                            <setting string="Groupe C">
+                                <field name="silina_group_label_c"/>
+                            </setting>
+                        </block>
+                        <block title="Barème d'appréciation (moyenne strictement inférieure au seuil)">
+                            <setting string="Moyenne &lt; seuil 1">
+                                <field name="silina_appr_threshold_1"/>
+                                <field name="silina_appr_label_1"/>
+                            </setting>
+                            <setting string="Moyenne &lt; seuil 2">
+                                <field name="silina_appr_threshold_2"/>
+                                <field name="silina_appr_label_2"/>
+                            </setting>
+                            <setting string="Moyenne &lt; seuil 3">
+                                <field name="silina_appr_threshold_3"/>
+                                <field name="silina_appr_label_3"/>
+                            </setting>
+                            <setting string="Moyenne &lt; seuil 4">
+                                <field name="silina_appr_threshold_4"/>
+                                <field name="silina_appr_label_4"/>
+                            </setting>
+                            <setting string="Moyenne &lt; seuil 5">
+                                <field name="silina_appr_threshold_5"/>
+                                <field name="silina_appr_label_5"/>
+                            </setting>
+                            <setting string="Moyenne &lt; seuil 6">
+                                <field name="silina_appr_threshold_6"/>
+                                <field name="silina_appr_label_6"/>
+                            </setting>
+                            <setting string="Moyenne ≥ seuil 6">
+                                <field name="silina_appr_label_7"/>
+                            </setting>
+                        </block>
+                    </app>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_silina_res_config_settings" model="ir.actions.act_window">
+            <field name="name">Paramètres</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module': 'silina_edu', 'bin_size': False}</field>
+        </record>
+
+    </data>
+</odoo>

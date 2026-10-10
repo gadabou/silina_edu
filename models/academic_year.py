@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
@@ -54,6 +56,16 @@ class AcademicYear(models.Model):
 
     description = fields.Text(string='Description')
 
+    period_type = fields.Selection([
+        ('trimester', 'Trimestres'),
+        ('semester', 'Semestres'),
+    ], string='Découpage en périodes', default='trimester', required=True)
+    period_ids = fields.One2many(
+        'silina.period',
+        'academic_year_id',
+        string='Périodes'
+    )
+
     _sql_constraints = [
         ('code_unique', 'unique(code)', 'Le code de l\'année scolaire doit être unique!'),
     ]
@@ -102,6 +114,41 @@ class AcademicYear(models.Model):
             'state': 'closed',
             'is_current': False
         })
+        return True
+
+    def action_generate_periods(self):
+        """Génère 3 trimestres ou 2 semestres répartis équitablement entre
+        la date de début et la date de fin. Ne recrée pas les périodes existantes."""
+        Period = self.env['silina.period']
+        for year in self:
+            if not year.date_start or not year.date_end:
+                raise ValidationError(_(
+                    "Renseignez la date de début et la date de fin de l'année scolaire "
+                    "avant de générer les périodes."))
+            if year.period_ids:
+                continue
+            if year.period_type == 'semester':
+                count, code_prefix = 2, 'S'
+                names = [_('1er Semestre'), _('2e Semestre')]
+            else:
+                count, code_prefix = 3, 'T'
+                names = [_('1er Trimestre'), _('2e Trimestre'), _('3e Trimestre')]
+            total_days = (year.date_end - year.date_start).days + 1
+            start = year.date_start
+            for i in range(count):
+                if i == count - 1:
+                    end = year.date_end
+                else:
+                    end = year.date_start + timedelta(days=total_days * (i + 1) // count - 1)
+                Period.create({
+                    'academic_year_id': year.id,
+                    'name': names[i],
+                    'code': '%s%d' % (code_prefix, i + 1),
+                    'sequence': (i + 1) * 10,
+                    'date_start': start,
+                    'date_end': end,
+                })
+                start = end + timedelta(days=1)
         return True
 
     @api.model_create_multi

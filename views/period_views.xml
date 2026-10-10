@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_period_tree" model="ir.ui.view">
+            <field name="name">silina.period.tree</field>
+            <field name="model">silina.period</field>
+            <field name="arch" type="xml">
+                <list string="Périodes" decoration-muted="state=='closed'">
+                    <field name="sequence" widget="handle"/>
+                    <field name="academic_year_id"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                    <field name="state" widget="badge" decoration-success="state=='open'" decoration-muted="state=='closed'"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_period_form" model="ir.ui.view">
+            <field name="name">silina.period.form</field>
+            <field name="model">silina.period</field>
+            <field name="arch" type="xml">
+                <form string="Période">
+                    <header>
+                        <button name="action_close" string="Clôturer" type="object" invisible="state != 'open'"/>
+                        <button name="action_reopen" string="Rouvrir" type="object" invisible="state != 'closed'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="open,closed"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="academic_year_id"/>
+                                <field name="name"/>
+                                <field name="code"/>
+                                <field name="sequence"/>
+                            </group>
+                            <group>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_period_search" model="ir.ui.view">
+            <field name="name">silina.period.search</field>
+            <field name="model">silina.period</field>
+            <field name="arch" type="xml">
+                <search string="Périodes">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="academic_year_id"/>
+                    <filter name="open" string="Ouvertes" domain="[('state', '=', 'open')]"/>
+                    <filter name="closed" string="Clôturées" domain="[('state', '=', 'closed')]"/>
+                    <group expand="0" string="Regrouper par">
+                        <filter name="group_year" string="Année scolaire" context="{'group_by': 'academic_year_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_period" model="ir.actions.act_window">
+            <field name="name">Périodes</field>
+            <field name="res_model">silina.period</field>
+            <field name="view_mode">list,form</field>
+            <field name="target">current</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une période (ou les générer depuis l'année scolaire)
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -23,6 +23,11 @@ class Teacher(models.Model):
         readonly=True
     )
 
+    display_short_name = fields.Char(
+        string='Nom court', compute='_compute_display_short_name',
+        help="Nom pour les bulletins : premier mot complet, les suivants en initiales "
+             "(ex. « KOFFI Ama Julie » devient « KOFFI A. J. »).")
+
     image_1920 = fields.Image(
         related='employee_id.image_1920',
         string='Photo'
@@ -149,6 +154,16 @@ class Teacher(models.Model):
     ]
 
     @api.depends('subject_assignment_ids')
+    @api.depends('employee_id.name')
+    def _compute_display_short_name(self):
+        for record in self:
+            parts = (record.employee_id.name or '').split()
+            if len(parts) <= 1:
+                record.display_short_name = ' '.join(parts)
+            else:
+                record.display_short_name = ' '.join(
+                    [parts[0]] + ['%s.' % p[0].upper() for p in parts[1:]])
+
     def _compute_counts(self):
         for record in self:
             record.classroom_count = len(record.subject_assignment_ids.mapped('classroom_id'))

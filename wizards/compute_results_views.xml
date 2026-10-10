@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_compute_results_wizard_form" model="ir.ui.view">
+            <field name="name">silina.compute.results.wizard.form</field>
+            <field name="model">silina.compute.results.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Calculer les résultats">
+                    <group>
+                        <group>
+                            <field name="academic_year_id" options="{'no_create': True}"/>
+                            <field name="period_id" options="{'no_create': True}"/>
+                            <field name="classroom_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="compute_period"/>
+                            <field name="compute_annual"/>
+                            <field name="force" invisible="not compute_period"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="action_compute" string="Calculer" type="object" class="btn-primary"/>
+                        <button string="Annuler" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_compute_results_wizard" model="ir.actions.act_window">
+            <field name="name">Calculer les résultats</field>
+            <field name="res_model">silina.compute.results.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

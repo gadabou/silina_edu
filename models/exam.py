@@ -29,12 +29,31 @@ class Exam(models.Model):
         ('final', 'Examen final'),
     ], string='Type d\'examen', required=True, tracking=True)
 
+    evaluation_kind = fields.Selection([
+        ('devoir', 'Devoir'),
+        ('composition', 'Composition'),
+    ], string="Nature de l'évaluation", default='devoir', required=True, tracking=True,
+        help="Devoir : entre dans la moyenne des devoirs de la matière. "
+             "Composition : note de composition (colonne « Compos. » du bulletin, "
+             "mois de composition du livret).")
+    composition_number = fields.Integer(
+        string='N° de composition (mois)', tracking=True,
+        help="Rang de la composition mensuelle (1 à 12) : colonne du livret "
+             "(1er mois, 2e mois...).")
+
     academic_year_id = fields.Many2one(
         'silina.academic.year',
         string='Année Scolaire',
         required=True,
         tracking=True,
         default=lambda self: self.env['silina.academic.year'].get_current_year()
+    )
+
+    period_id = fields.Many2one(
+        'silina.period',
+        string='Période',
+        domain="[('academic_year_id', '=', academic_year_id)]",
+        tracking=True
     )
 
     date_start = fields.Date(
@@ -117,6 +136,18 @@ class Exam(models.Model):
         for record in self:
             if record.date_start > record.date_end:
                 raise ValidationError(_('La date de fin doit être postérieure à la date de début!'))
+
+    @api.constrains('evaluation_kind', 'composition_number')
+    def _check_composition_number(self):
+        for record in self:
+            if record.evaluation_kind == 'composition' and record.composition_number \
+                    and not 1 <= record.composition_number <= 12:
+                raise ValidationError(_('Le numéro de composition doit être compris entre 1 et 12!'))
+
+    @api.onchange('evaluation_kind')
+    def _onchange_evaluation_kind(self):
+        if self.evaluation_kind != 'composition':
+            self.composition_number = 0
 
     @api.constrains('passing_marks', 'total_marks')
     def _check_marks(self):

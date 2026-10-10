@@ -11,10 +11,13 @@
                     <field name="student_id" readonly="1"/>
                     <field name="current_classroom_id" readonly="1"/>
                     <field name="current_level_id" readonly="1"/>
+                    <field name="decision" readonly="1"/>
+                    <field name="outcome" readonly="1"/>
                     <field name="new_level_id" readonly="1"/>
                     <field name="wizard_id" column_invisible="1"/>
                     <field name="new_classroom_id"
-                           required="1"
+                           required="outcome != 'graduate'"
+                           readonly="outcome == 'graduate'"
                            placeholder="Sélectionner la classe..."/>
                     <field name="state" readonly="1"/>
                     <field name="error_message" readonly="1" optional="hide"/>
@@ -38,6 +41,7 @@
                             <group>
                                 <field name="promotion_date"/>
                                 <field name="student_count"/>
+                                <field name="include_indulgence" invisible="promotion_type != 'decision'"/>
                             </group>
                         </group>
                         <group invisible="state != 'draft'">

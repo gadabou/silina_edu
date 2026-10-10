@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============ Résultats de période ============ -->
+        <record id="view_period_result_list" model="ir.ui.view">
+            <field name="name">silina.period.result.list</field>
+            <field name="model">silina.period.result</field>
+            <field name="arch" type="xml">
+                <list string="Résultats de période" decoration-muted="not has_average"
+                      decoration-success="state == 'final'">
+                    <header>
+                        <button name="action_recompute" string="Recalculer" type="object"/>
+                        <button name="action_validate" string="Valider (définitif)" type="object"/>
+                        <button name="action_set_draft" string="Remettre en provisoire" type="object"/>
+                    </header>
+                    <field name="period_id"/>
+                    <field name="classroom_id"/>
+                    <field name="student_id"/>
+                    <field name="has_average" column_invisible="1"/>
+                    <field name="average"/>
+                    <field name="rank"/>
+                    <field name="effectif"/>
+                    <field name="class_average" optional="show"/>
+                    <field name="mention"/>
+                    <field name="absences" optional="show"/>
+                    <field name="lates" optional="show"/>
+                    <field name="conduct_score" optional="show"/>
+                    <field name="state" widget="badge"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_period_result_form" model="ir.ui.view">
+            <field name="name">silina.period.result.form</field>
+            <field name="model">silina.period.result</field>
+            <field name="arch" type="xml">
+                <form string="Résultat de période">
+                    <header>
+                        <button name="action_recompute" string="Recalculer" type="object"
+                                invisible="state == 'final'"/>
+                        <button name="action_validate" string="Valider" type="object" class="btn-primary"
+                                invisible="state == 'final'"/>
+                        <button name="action_set_draft" string="Remettre en provisoire" type="object"
+                                invisible="state == 'draft'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,final"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="student_id"/>
+                                <field name="classroom_id"/>
+                                <field name="academic_year_id"/>
+                                <field name="period_id"/>
+                            </group>
+                            <group>
+                                <field name="has_average" invisible="1"/>
+                                <field name="average"/>
+                                <field name="rank"/>
+                                <field name="effectif"/>
+                                <field name="mention"/>
+                                <field name="appreciation_scale"/>
+                                <field name="result_phrase"/>
+                            </group>
+                        </group>
+                        <group string="Statistiques de la classe">
+                            <group>
+                                <field name="class_average"/>
+                            </group>
+                            <group>
+                                <field name="class_max"/>
+                                <field name="class_min"/>
+                            </group>
+                        </group>
+                        <group string="Discipline">
+                            <group>
+                                <field name="absences"/>
+                                <field name="absences_unjustified"/>
+                                <field name="lates"/>
+                            </group>
+                            <group>
+                                <field name="conduct_score"/>
+                                <field name="conduct_appreciation"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Matières" name="lines">
+                                <field name="line_ids" readonly="1">
+                                    <list string="Matières">
+                                        <field name="subject_id"/>
+                                        <field name="coefficient"/>
+                                        <field name="nb_notes"/>
+                                        <field name="homework_average"/>
+                                        <field name="composition_average"/>
+                                        <field name="average"/>
+                                        <field name="weighted_average"/>
+                                        <field name="rank"/>
+                                        <field name="effectif"/>
+                                        <field name="mention"/>
+                                        <field name="appreciation"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Groupes" name="groups">
+                                <field name="group_result_ids" readonly="1">
+                                    <list string="Groupes">
+                                        <field name="group"/>
+                                        <field name="group_label"/>
+                                        <field name="total_coef"/>
+                                        <field name="total_points"/>
+                                        <field name="average"/>
+                                        <field name="rank"/>
+                                        <field name="effectif"/>
+                                        <field name="appreciation"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Appréciations" name="appreciations">
+                                <group>
+                                    <field name="appreciation_teacher"/>
+                                    <field name="appreciation_director"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_period_result_search" model="ir.ui.view">
+            <field name="name">silina.period.result.search</field>
+            <field name="model">silina.period.result</field>
+            <field name="arch" type="xml">
+                <search string="Résultats de période">
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="period_id"/>
+                    <field name="academic_year_id"/>
+                    <filter string="Provisoires" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Définitifs" name="final" domain="[('state', '=', 'final')]"/>
+                    <filter string="Avec moyenne" name="with_average" domain="[('has_average', '=', True)]"/>
+                    <group expand="0" string="Regrouper par">
+                        <filter string="Période" name="group_period" context="{'group_by': 'period_id'}"/>
+                        <filter string="Classe" name="group_classroom" context="{'group_by': 'classroom_id'}"/>
+                        <filter string="Année scolaire" name="group_year" context="{'group_by': 'academic_year_id'}"/>
+                        <filter string="Niveau" name="group_level" context="{'group_by': 'level_id'}"/>
+                        <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_period_result" model="ir.actions.act_window">
+            <field name="name">Résultats de période</field>
+            <field name="res_model">silina.period.result</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_group_period': 1, 'search_default_group_classroom': 1}</field>
+        </record>
+
+        <!-- ============ Résultats annuels ============ -->
+        <record id="view_annual_result_list" model="ir.ui.view">
+            <field name="name">silina.annual.result.list</field>
+            <field name="model">silina.annual.result</field>
+            <field name="arch" type="xml">
+                <list string="Résultats annuels" decoration-muted="not has_average">
+                    <header>
+                        <button name="action_recompute" string="Recalculer" type="object"/>
+                    </header>
+                    <field name="academic_year_id"/>
+                    <field name="classroom_id"/>
+                    <field name="student_id"/>
+                    <field name="has_average" column_invisible="1"/>
+                    <field name="annual_average"/>
+                    <field name="rank"/>
+                    <field name="effectif"/>
+                    <field name="class_average" optional="show"/>
+                    <field name="mention"/>
+                    <field name="period_count"/>
+                    <field name="total_absences" optional="show"/>
+                    <field name="total_lates" optional="show"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_annual_result_form" model="ir.ui.view">
+            <field name="name">silina.annual.result.form</field>
+            <field name="model">silina.annual.result</field>
+            <field name="arch" type="xml">
+                <form string="Résultat annuel">
+                    <header>
+                        <button name="action_recompute" string="Recalculer" type="object"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="student_id"/>
+                                <field name="classroom_id"/>
+                                <field name="academic_year_id"/>
+                                <field name="level_id"/>
+                                <field name="degree"/>
+                            </group>
+                            <group>
+                                <field name="has_average" invisible="1"/>
+                                <field name="annual_average"/>
+                                <field name="rank"/>
+                                <field name="effectif"/>
+                                <field name="mention"/>
+                            </group>
+                        </group>
+                        <group name="class_stats_group" string="Statistiques de la classe">
+                            <group>
+                                <field name="class_average"/>
+                            </group>
+                            <group>
+                                <field name="class_max"/>
+                                <field name="class_min"/>
+                            </group>
+                        </group>
+                        <group string="Discipline">
+                            <field name="total_absences"/>
+                            <field name="total_lates"/>
+                        </group>
+                        <notebook>
+                            <page string="Périodes" name="periods">
+                                <field name="period_result_ids" readonly="1">
+                                    <list string="Périodes">
+                                        <field name="period_id"/>
+                                        <field name="average"/>
+                                        <field name="rank"/>
+                                        <field name="effectif"/>
+                                        <field name="mention"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_annual_result_search" model="ir.ui.view">
+            <field name="name">silina.annual.result.search</field>
+            <field name="model">silina.annual.result</field>
+            <field name="arch" type="xml">
+                <search string="Résultats annuels">
+                    <field name="student_id"/>
+                    <field name="classroom_id"/>
+                    <field name="academic_year_id"/>
+                    <filter string="Avec moyenne" name="with_average" domain="[('has_average', '=', True)]"/>
+                    <group expand="0" string="Regrouper par">
+                        <filter string="Année scolaire" name="group_year" context="{'group_by': 'academic_year_id'}"/>
+                        <filter string="Classe" name="group_classroom" context="{'group_by': 'classroom_id'}"/>
+                        <filter string="Niveau" name="group_level" context="{'group_by': 'level_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_annual_result" model="ir.actions.act_window">
+            <field name="name">Résultats annuels</field>
+            <field name="res_model">silina.annual.result</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_group_year': 1, 'search_default_group_classroom': 1}</field>
+        </record>
+
+    </data>
+</odoo>

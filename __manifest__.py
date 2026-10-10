@@ -1,6 +1,6 @@
 {
     'name': 'SILINA-EDU - Gestion Scolaire',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Education',
     'summary': 'Module complet de gestion d\'un complexe scolaire (Primaire, Collège, Lycée)',
     'description': """
@@ -37,11 +37,15 @@
         # Data
         'data/sequence_data.xml',
         'data/academic_data.xml',
+        'data/discipline_data.xml',
+        'data/subjects_documents_data.xml',
 
         # Reports (loaded before views to allow views to reference report actions)
         # Note: report_card_template.xml must be loaded before invoice_report_template.xml
         # because invoice_report_template.xml inherits from report_card_standard_document
         'reports/report_card_template.xml',
+        'reports/report_bulletin.xml',
+        'reports/report_livret.xml',
         'reports/payment_receipt_template.xml',
         'reports/student_list_template.xml',
         'reports/invoice_report_template.xml',
@@ -59,15 +63,22 @@
         'views/student_views.xml',
         'views/parent_views.xml',
         'views/student_document_views.xml',
+        'views/period_views.xml',
         'views/academic_year_views.xml',
         'views/exam_views.xml',
         'views/exam_result_views.xml',
+        'views/discipline_views.xml',
+        'views/result_views.xml',
+        'views/annual_decision_views.xml',
+        'views/report_card_views.xml',
+        'views/res_config_settings_views.xml',
         'views/fee_type_views.xml',
         'views/payroll_views.xml',
         'views/account_payment_views.xml',
         'views/account_move_views.xml',
 
         # Wizards (must be loaded before menus that reference them)
+        'wizards/compute_results_views.xml',
         'wizards/bulk_student_promotion_views.xml',
         'wizards/generate_report_card_views.xml',
         'wizards/generate_fee_invoices_views.xml',

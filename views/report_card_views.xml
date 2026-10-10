@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Bouton « Imprimer » sur le résultat de période (bulletin ou livret selon le degré) -->
+        <record id="view_period_result_form_print" model="ir.ui.view">
+            <field name="name">silina.period.result.form.print</field>
+            <field name="model">silina.period.result</field>
+            <field name="inherit_id" ref="silina_edu.view_period_result_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_print_report_card" string="Imprimer le bulletin / livret"
+                            type="object" icon="fa-print"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Version annuelle -->
+        <record id="view_annual_result_form_print" model="ir.ui.view">
+            <field name="name">silina.annual.result.form.print</field>
+            <field name="model">silina.annual.result</field>
+            <field name="inherit_id" ref="silina_edu.view_annual_result_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_print_report_card" string="Imprimer le bulletin / livret annuel"
+                            type="object" icon="fa-print"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

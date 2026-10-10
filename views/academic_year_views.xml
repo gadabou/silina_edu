@@ -29,6 +29,7 @@
                     <header>
                         <button name="action_activate" string="Activer" type="object" class="oe_highlight" invisible="state != 'draft'"/>
                         <button name="action_close" string="Fermer" type="object" invisible="state != 'active'"/>
+                        <button name="action_generate_periods" string="Générer les périodes" type="object" invisible="period_ids"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,active,closed"/>
                     </header>
                     <sheet>
@@ -49,9 +50,22 @@
                             <group>
                                 <field name="date_start"/>
                                 <field name="date_end"/>
+                                <field name="period_type" readonly="period_ids"/>
                             </group>
                         </group>
                         <notebook>
+                            <page string="Périodes">
+                                <field name="period_ids">
+                                    <list string="Périodes" editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="date_start"/>
+                                        <field name="date_end"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
                             <page string="Description">
                                 <field name="description"/>
                             </page>

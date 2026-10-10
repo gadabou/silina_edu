@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Matières d'après les bulletins (collège) et livrets (primaire) de référence.
+         noupdate="0" : les matières déjà présentes (mêmes identifiants) sont mises à jour. -->
+    <data noupdate="0">
+
+        <!-- Bulletin collège : groupe A (matières littéraires) / B (matières scientifiques) -->
+        <record id="subject_english" model="silina.subject">
+            <field name="name">Langue anglaise</field>
+            <field name="code">ANG</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">1</field>
+            <field name="report_group">A</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_6eme'),ref('level_5eme'),ref('level_4eme'),ref('level_3eme')])]"/>
+        </record>
+
+        <record id="subject_french" model="silina.subject">
+            <field name="name">Langue et littérature française</field>
+            <field name="code">FR</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">2</field>
+            <field name="report_group">A</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_6eme'),ref('level_5eme'),ref('level_4eme'),ref('level_3eme')])]"/>
+        </record>
+
+        <record id="subject_history" model="silina.subject">
+            <field name="name">Histoire et géographie</field>
+            <field name="code">HISTGEO</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">3</field>
+            <field name="report_group">A</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_6eme'),ref('level_5eme'),ref('level_4eme'),ref('level_3eme')])]"/>
+        </record>
+
+        <record id="subject_civic" model="silina.subject">
+            <field name="name">Éducation civique et morale</field>
+            <field name="code">ECM</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">4</field>
+            <field name="report_group">A</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_6eme'),ref('level_5eme'),ref('level_4eme'),ref('level_3eme')])]"/>
+        </record>
+
+        <record id="subject_sport" model="silina.subject">
+            <field name="name">Éducation physique et sportive</field>
+            <field name="code">EPS</field>
+            <field name="subject_type">practical</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">5</field>
+            <field name="report_group">B</field>
+            <field name="livret_name">EPS</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_6eme'),ref('level_5eme'),ref('level_4eme'),ref('level_3eme'),ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_math" model="silina.subject">
+            <field name="name">Mathématiques</field>
+            <field name="code">MATH</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">6</field>
+            <field name="report_group">B</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_6eme'),ref('level_5eme'),ref('level_4eme'),ref('level_3eme'),ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_physics" model="silina.subject">
+            <field name="name">Sciences physiques et chimiques</field>
+            <field name="code">PC</field>
+            <field name="subject_type">both</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">7</field>
+            <field name="report_group">B</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_6eme'),ref('level_5eme'),ref('level_4eme'),ref('level_3eme')])]"/>
+        </record>
+
+        <record id="subject_svt" model="silina.subject">
+            <field name="name">Sciences de la vie et de la terre</field>
+            <field name="code">SVT</field>
+            <field name="subject_type">both</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">8</field>
+            <field name="report_group">B</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_6eme'),ref('level_5eme'),ref('level_4eme'),ref('level_3eme')])]"/>
+        </record>
+
+        <!-- Livret primaire : disciplines de la grille des compositions mensuelles -->
+        <record id="subject_livret_copie" model="silina.subject">
+            <field name="name">Copie</field>
+            <field name="code">COPIE</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">20</field>
+            <field name="report_group">C</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_dictee" model="silina.subject">
+            <field name="name">Je S.E. mots nouveaux (Dictée)</field>
+            <field name="code">DICTEE</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">21</field>
+            <field name="report_group">C</field>
+            <field name="livret_name">Dictée</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_redaction" model="silina.subject">
+            <field name="name">Je produis un texte (Rédaction / Construction de phrases)</field>
+            <field name="code">REDAC</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">22</field>
+            <field name="report_group">C</field>
+            <field name="livret_name">Rédaction / Construction de phrases</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_etude_texte" model="silina.subject">
+            <field name="name">Étude de texte</field>
+            <field name="code">ETUDE_TXT</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">23</field>
+            <field name="report_group">C</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_langage" model="silina.subject">
+            <field name="name">J'apprends à parler (Langage)</field>
+            <field name="code">LANGAGE</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">24</field>
+            <field name="report_group">C</field>
+            <field name="livret_name">Langage</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_lecture" model="silina.subject">
+            <field name="name">J'apprends à lire (Lecture)</field>
+            <field name="code">LECTURE</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">25</field>
+            <field name="report_group">C</field>
+            <field name="livret_name">Lecture</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_recitation" model="silina.subject">
+            <field name="name">J'apprends à dire (Récitation)</field>
+            <field name="code">RECIT</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">26</field>
+            <field name="report_group">C</field>
+            <field name="livret_name">Récitation</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_calcul_mental" model="silina.subject">
+            <field name="name">Calcul mental</field>
+            <field name="code">CALC_MENTAL</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">27</field>
+            <field name="report_group">C</field>
+            <field name="livret_group">Mathématiques</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_exo_calcul" model="silina.subject">
+            <field name="name">Exercices écrits de calcul</field>
+            <field name="code">EXO_CALCUL</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">28</field>
+            <field name="report_group">C</field>
+            <field name="livret_group">Mathématiques</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_probleme" model="silina.subject">
+            <field name="name">Problème</field>
+            <field name="code">PROBLEME</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">29</field>
+            <field name="report_group">C</field>
+            <field name="livret_group">Mathématiques</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_sc_humaines" model="silina.subject">
+            <field name="name">Sciences humaines</field>
+            <field name="code">SC_HUM</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">30</field>
+            <field name="report_group">C</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_sc_techno" model="silina.subject">
+            <field name="name">Sciences et technologies</field>
+            <field name="code">SC_TECH</field>
+            <field name="subject_type">both</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">31</field>
+            <field name="report_group">C</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_edu_sociale" model="silina.subject">
+            <field name="name">Éducation sociale</field>
+            <field name="code">EDU_SOC</field>
+            <field name="subject_type">theory</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">32</field>
+            <field name="report_group">C</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_chant" model="silina.subject">
+            <field name="name">Chant</field>
+            <field name="code">CHANT</field>
+            <field name="subject_type">practical</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">33</field>
+            <field name="report_group">C</field>
+            <field name="livret_group">EAC</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_dessin" model="silina.subject">
+            <field name="name">Dessin</field>
+            <field name="code">DESSIN</field>
+            <field name="subject_type">practical</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">34</field>
+            <field name="report_group">C</field>
+            <field name="livret_group">EAC</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+        <record id="subject_livret_tm" model="silina.subject">
+            <field name="name">TM</field>
+            <field name="code">TM</field>
+            <field name="subject_type">practical</field>
+            <field name="coefficient">1.0</field>
+            <field name="sequence">35</field>
+            <field name="report_group">C</field>
+            <field name="livret_group">EAC</field>
+            <field name="degree_ids" eval="[(6, 0, [ref('level_cp1'),ref('level_cp2'),ref('level_ce1'),ref('level_ce2'),ref('level_cm1'),ref('level_cm2')])]"/>
+        </record>
+
+    </data>
+</odoo>

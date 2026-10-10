@@ -46,6 +46,20 @@ class ExamResult(models.Model):
         readonly=True
     )
 
+    period_id = fields.Many2one(
+        related='exam_id.period_id',
+        string='Période',
+        store=True,
+        readonly=True
+    )
+
+    evaluation_kind = fields.Selection(
+        related='exam_id.evaluation_kind', string="Nature de l'évaluation",
+        store=True, readonly=True)
+    composition_number = fields.Integer(
+        related='exam_id.composition_number', string='N° de composition',
+        store=True, readonly=True)
+
     # Notes
     marks_obtained = fields.Float(
         string='Note obtenue',
@@ -155,6 +169,100 @@ class ExamResult(models.Model):
     def _compute_weighted_marks(self):
         for record in self:
             record.weighted_marks = record.marks_obtained * record.coefficient
+
+    @api.model
+    def get_monthly_grid(self, student, academic_year=None):
+        """Grille des compositions mensuelles d'un élève (livret).
+
+        Notes confirmées des examens ``evaluation_kind = 'composition'`` de
+        l'année, ramenées sur le barème de la société (20), moyennées si
+        plusieurs évaluations pour la même matière et le même mois.
+        Absents/sans note exclus (jamais 0).
+
+        :param student: silina.student
+        :param academic_year: silina.academic.year (défaut : année de l'élève)
+        :return: dict
+            {
+              'grid':          {subject_id: {n: note}},        n = 1..12
+              'subject_totals': {subject_id: total des mois},
+              'months':        [n, ...] mois ayant au moins une note (trié),
+              'totals':        {n: somme des notes du mois},
+              'averages':      {n: moyenne pondérée par coefficient (affectations de la
+                                classe, repli coefficient matière) },
+              'ranks':         {n: rang dans la classe (1,1,3), absent si non classé},
+              'effectifs':     {n: nb d'élèves classés ce mois},
+            }
+        """
+        from . import result_utils as ru
+        student.ensure_one()
+        year = academic_year or student.academic_year_id
+        company = self.env.company
+        max_mark = company.silina_max_mark or 20.0
+        classroom = student.classroom_id
+        classmates = classroom.student_ids if classroom else student
+        results = self.search([
+            ('student_id', 'in', classmates.ids),
+            ('academic_year_id', '=', year.id),
+            ('evaluation_kind', '=', 'composition'),
+            ('composition_number', '>', 0),
+            ('state', '=', 'confirmed'),
+        ])
+        coef_map = {}
+        if classroom:
+            coef_map = {a.subject_id.id: a.coefficient for a in classroom.subject_assignment_ids}
+        raw = {}  # {student_id: {n: {subject_id: [notes]}}}
+        coef_default = {}
+        for r in results:
+            if getattr(r, 'is_absent', False):
+                continue
+            scaled = ru.scale_mark(r.marks_obtained, r.total_marks, max_mark)
+            if scaled is None:
+                continue
+            raw.setdefault(r.student_id.id, {}).setdefault(
+                r.composition_number, {}).setdefault(r.subject_id.id, []).append(scaled)
+            coef_default[r.subject_id.id] = r.subject_id.coefficient or 1.0
+
+        def coef_of(sid):
+            return coef_map.get(sid) or coef_default.get(sid) or 1.0
+
+        # {student_id: {n: (total, average)}}
+        per_month = {}
+        for sid_student, months in raw.items():
+            per_month[sid_student] = {}
+            for n, subjects in months.items():
+                avgs = {sub: ru.mean(v) for sub, v in subjects.items()}
+                total = sum(a for a in avgs.values() if a is not None)
+                avg, _cs = ru.weighted_average((a, coef_of(sub)) for sub, a in avgs.items())
+                per_month[sid_student][n] = (total, avg)
+
+        grid, subject_totals, totals, averages, ranks, effectifs = {}, {}, {}, {}, {}, {}
+        mine = raw.get(student.id, {})
+        for n, subjects in mine.items():
+            for sub, values in subjects.items():
+                note = ru.round_half_up(ru.mean(values))
+                grid.setdefault(sub, {})[n] = note
+        for sub, months in grid.items():
+            subject_totals[sub] = ru.round_half_up(sum(months.values()))
+        months_list = sorted({n for m in per_month.values() for n in m})
+        for n in months_list:
+            if n in per_month.get(student.id, {}):
+                total, avg = per_month[student.id][n]
+                totals[n] = ru.round_half_up(total)
+                averages[n] = ru.round_half_up(avg) if avg is not None else None
+            month_avgs = {st: m[n][1] for st, m in per_month.items() if n in m}
+            month_ranks = ru.competition_ranks(month_avgs)
+            effectifs[n] = len(month_ranks)
+            if student.id in month_ranks:
+                ranks[n] = month_ranks[student.id]
+        return {
+            'grid': grid,
+            'subject_totals': subject_totals,
+            'months': sorted(totals),
+            'totals': totals,
+            'averages': averages,
+            'ranks': ranks,
+            'effectifs': effectifs,
+        }
 
     def action_confirm(self):
         self.ensure_one()

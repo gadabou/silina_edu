@@ -40,7 +40,10 @@
                     <field name="name"/>
                     <field name="code"/>
                     <field name="exam_type"/>
+                    <field name="evaluation_kind"/>
+                    <field name="composition_number" optional="show"/>
                     <field name="academic_year_id"/>
+                    <field name="period_id"/>
                     <field name="date_start"/>
                     <field name="date_end"/>
                     <field name="result_count"/>
@@ -67,7 +70,11 @@
                                 <field name="name"/>
                                 <field name="code"/>
                                 <field name="exam_type"/>
+                                <field name="evaluation_kind"/>
+                                <field name="composition_number"
+                                       invisible="evaluation_kind != 'composition'"/>
                                 <field name="academic_year_id"/>
+                                <field name="period_id" domain="[('academic_year_id', '=', academic_year_id)]"/>
                             </group>
                             <group>
                                 <field name="date_start"/>

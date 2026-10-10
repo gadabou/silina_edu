@@ -13,6 +13,8 @@
                     <field name="code"/>
                     <field name="subject_type"/>
                     <field name="coefficient"/>
+                    <field name="report_group"/>
+                    <field name="livret_group" optional="show"/>
                 </list>
             </field>
         </record>
@@ -33,6 +35,15 @@
                                 <field name="coefficient"/>
                                 <field name="sequence"/>
                                 <field name="active"/>
+                            </group>
+                        </group>
+                        <group string="Bulletin et livret">
+                            <group>
+                                <field name="report_group"/>
+                            </group>
+                            <group>
+                                <field name="livret_group"/>
+                                <field name="livret_name"/>
                             </group>
                         </group>
                         <field name="description"/>

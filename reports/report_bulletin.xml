@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Formats papier : A4 portrait (bulletin simple) et A4 paysage (bulletin avec souche) -->
+        <record id="paperformat_bulletin_a4_portrait" model="report.paperformat">
+            <field name="name">Bulletin A4 portrait</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">8</field>
+            <field name="margin_bottom">8</field>
+            <field name="margin_left">8</field>
+            <field name="margin_right">8</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="paperformat_bulletin_a4_landscape" model="report.paperformat">
+            <field name="name">Bulletin A4 paysage (avec souche)</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="orientation">Landscape</field>
+            <field name="margin_top">6</field>
+            <field name="margin_bottom">6</field>
+            <field name="margin_left">6</field>
+            <field name="margin_right">6</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <!--
+            Rapports sur silina.student : la période / la version annuelle sont des
+            paramètres (data) du rapport. Voir wizards/generate_report_card.py
+            (silina.report.card.mixin.get_report_card_action = dispatch bulletin/livret).
+        -->
+        <record id="action_report_bulletin" model="ir.actions.report">
+            <field name="name">Bulletin de notes (collège/lycée)</field>
+            <field name="model">silina.student</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">silina_edu.report_bulletin_document</field>
+            <field name="report_file">silina_edu.report_bulletin_document</field>
+            <field name="paperformat_id" ref="paperformat_bulletin_a4_portrait"/>
+        </record>
+
+        <record id="action_report_bulletin_souche" model="ir.actions.report">
+            <field name="name">Bulletin de notes avec souche (paysage)</field>
+            <field name="model">silina.student</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">silina_edu.report_bulletin_souche_document</field>
+            <field name="report_file">silina_edu.report_bulletin_souche_document</field>
+            <field name="paperformat_id" ref="paperformat_bulletin_a4_landscape"/>
+        </record>
+
+        <!-- ============================================================
+             Styles communs (portrait .bl, paysage/souche .bl.bl-s)
+             ============================================================ -->
+        <template id="report_bulletin_styles">
+            <style>
+                .bl-wrap { position: relative; overflow: hidden; width: 100%; font-family: 'DejaVu Sans', Arial, sans-serif; color: #111; }
+                .bl-mark { position: absolute; top: 40%; left: -8%; width: 116%; text-align: center; white-space: nowrap;
+                           font-size: 30pt; font-weight: bold; color: #ececec; text-transform: uppercase;
+                           -webkit-transform: rotate(-40deg); transform: rotate(-40deg); }
+                .bl-body { position: relative; }
+                .bl { font-size: 8pt; }
+                .bl table { border-collapse: collapse; }
+                .bl-head { width: 100%; }
+                .bl-head td { vertical-align: top; padding: 0; }
+                .bl-min { font-weight: bold; font-size: 7pt; text-transform: uppercase; text-align: center; }
+                .bl-min-sub { font-size: 7pt; text-align: center; }
+                .bl-rep { font-weight: bold; font-size: 7pt; text-transform: uppercase; text-align: center; }
+                .bl-school { font-family: 'DejaVu Serif', 'Times New Roman', serif; font-style: italic; font-weight: bold;
+                             font-size: 17pt; text-align: center; text-transform: uppercase; margin: 6px 0 4px 0; }
+                .bl-title { text-align: center; font-weight: bold; font-size: 11pt; text-decoration: underline; margin-top: 4px; }
+                .bl-year { text-align: center; font-weight: bold; font-size: 8pt; }
+                .bl-name { text-align: center; font-family: 'DejaVu Serif', 'Times New Roman', serif; font-weight: bold; font-size: 10pt; margin-top: 3px; }
+                .bl-ident { text-align: center; font-family: 'DejaVu Serif', 'Times New Roman', serif; font-weight: bold; font-size: 7pt; }
+                .bl-class { text-align: center; font-weight: bold; font-size: 9pt; margin-bottom: 6px; }
+                .bl-class small { font-size: 7pt; }
+                .bl-tbl { width: 100%; }
+                .bl-tbl th, .bl-tbl td { border: 1px solid #2b3a67; padding: 1px 3px; font-size: 7pt; }
+                .bl-tbl th { background-color: #dde3f0; text-align: center; font-weight: bold; font-size: 6.5pt; }
+                .bl-tbl td.num { text-align: right; padding-right: 5px; }
+                .bl-tbl td.ctr { text-align: center; }
+                .bl-tbl td.bl-n { border: none; text-align: right; padding-right: 2px; width: 3%; font-size: 6.5pt; vertical-align: top; }
+                .bl-tbl td.bl-free { border: none; }
+                .bl-tbl tr.bl-gt td { background-color: #f1f3f9; font-weight: bold; }
+                .bl-tbl tr.bl-gt td.bl-free { background-color: transparent; }
+                .bl-tbl tr.bl-gt td.bl-lab { font-size: 6.5pt; }
+                .bl-tbl tr.bl-gt td.bl-lab span { font-weight: normal; color: #666; }
+                .bl-tbl tr.bl-gap td { border: none; height: 7px; padding: 0; }
+                .bl-tbl tr.bl-tg td { background-color: #dde3f0; font-weight: bold; }
+                .bl-tbl tr.bl-tg td.bl-free { background-color: transparent; }
+                .bl-red { color: #c0121a; font-weight: bold; }
+                .bl-bold { font-weight: bold; }
+                .bl-res { width: 100%; margin-top: 8px; }
+                .bl-res td { vertical-align: top; padding: 0; }
+                .bl-box { width: 100%; border: 1px solid #2b3a67; }
+                .bl-box td { border: 1px solid #2b3a67; padding: 2px 4px; font-size: 7pt; }
+                .bl-box td.bl-hd { background-color: #dde3f0; font-weight: bold; }
+                .bl-phrase { font-style: italic; font-size: 7pt; padding: 3px 4px; min-height: 40px; height: 40px; vertical-align: top; }
+                .bl-stat { font-size: 7pt; padding-left: 14px; line-height: 1.35; }
+                .bl-stat b { font-size: 7pt; }
+                .bl-dots { color: #666; }
+                .bl-city { text-align: right; font-size: 7pt; margin-top: 14px; }
+                .bl-sign { width: 100%; margin-top: 6px; }
+                .bl-sign td { text-align: center; font-size: 7pt; vertical-align: top; }
+                .bl-sign td.bl-sn { font-weight: bold; padding-top: 34px; font-size: 7.5pt; }
+                .bl-stub { font-size: 6pt; font-style: italic; color: #555; height: 10px; }
+                .bl-empty { text-align: center; color: #777; margin: 30px 0; }
+
+                /* Variante paysage : deux exemplaires côte à côte */
+                .bl-pair { width: 100%; border-collapse: collapse; page-break-inside: avoid; }
+                .bl-pair td { vertical-align: top; width: 50%; padding: 0; }
+                .bl-pair td.bl-left { padding-right: 8px; border-right: 1px dashed #666; }
+                .bl-pair td.bl-right { padding-left: 8px; }
+                .bl.bl-s { font-size: 6pt; }
+                .bl.bl-s .bl-min, .bl.bl-s .bl-min-sub, .bl.bl-s .bl-rep { font-size: 5.5pt; }
+                .bl.bl-s .bl-school { font-size: 11.5pt; margin: 3px 0 2px 0; }
+                .bl.bl-s .bl-title { font-size: 8.5pt; }
+                .bl.bl-s .bl-year { font-size: 6.5pt; }
+                .bl.bl-s .bl-name { font-size: 8pt; }
+                .bl.bl-s .bl-ident { font-size: 5.8pt; }
+                .bl.bl-s .bl-class { font-size: 7pt; margin-bottom: 3px; }
+                .bl.bl-s .bl-tbl th { font-size: 5.3pt; padding: 0 2px; }
+                .bl.bl-s .bl-tbl td { font-size: 5.7pt; padding: 0 2px; }
+                .bl.bl-s .bl-tbl td.bl-n { font-size: 5.3pt; }
+                .bl.bl-s .bl-tbl tr.bl-gap td { height: 4px; }
+                .bl.bl-s .bl-res { margin-top: 4px; }
+                .bl.bl-s .bl-box td, .bl.bl-s .bl-phrase, .bl.bl-s .bl-stat { font-size: 5.7pt; }
+                .bl.bl-s .bl-phrase { height: 24px; min-height: 24px; }
+                .bl.bl-s .bl-city { font-size: 5.7pt; margin-top: 8px; }
+                .bl.bl-s .bl-sign td { font-size: 5.7pt; }
+                .bl.bl-s .bl-sign td.bl-sn { padding-top: 16px; font-size: 6pt; }
+                .bl-wrap.bl-ws .bl-mark { font-size: 17pt; }
+            </style>
+        </template>
+
+        <!-- ============================================================
+             Un bulletin (carte). Variables attendues : c, company, souche
+             ============================================================ -->
+        <template id="report_bulletin_card">
+            <t t-set="n_per" t-value="len(c['periods'])"/>
+            <t t-set="lead" t-value="(3 + n_per) if c['multi'] else 5"/>
+            <t t-set="tail" t-value="2 if c['multi'] else 3"/>
+            <t t-set="ncols" t-value="lead + 2 + tail"/>
+            <div t-attf-class="bl-wrap #{'bl-ws' if souche else ''}">
+                <div class="bl-mark" t-out="company.name"/>
+                <div t-attf-class="bl-body bl #{'bl-s' if souche else ''}">
+                    <div t-if="stub_label" class="bl-stub">SOUCHE — à conserver par l'établissement</div>
+
+                    <!-- En-tête -->
+                    <table class="bl-head">
+                        <tr>
+                            <td style="width: 38%;">
+                                <div class="bl-min" t-out="c['ministry1']"/>
+                                <div class="bl-min-sub" t-out="company.name"/>
+                            </td>
+                            <td style="width: 24%; text-align: center;">
+                                &#160;
+                            </td>
+                            <td style="width: 38%;">
+                                <div class="bl-rep" t-out="c['ministry2']"/>
+                                <div class="bl-min-sub" t-out="c['ministry3']"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="bl-school" t-out="company.name"/>
+                    <div class="bl-title" t-out="c['title']"/>
+                    <div class="bl-year" t-out="c['year_name']"/>
+                    <div class="bl-name" t-out="c['student_name']"/>
+                    <div class="bl-ident" t-out="c['ident_line']"/>
+                    <div class="bl-class">Classe de <t t-out="c['class_name']"/>
+                        <small t-if="c['effectif']"> &#160;Effectif : <b t-out="c['effectif']"/></small>
+                    </div>
+
+                    <t t-if="not c['has_data']">
+                        <div class="bl-empty">Aucun résultat disponible pour cette période.</div>
+                    </t>
+                    <t t-else="">
+                        <table class="bl-tbl">
+                            <thead>
+                                <tr>
+                                    <td class="bl-n" style="border: none;"/>
+                                    <th style="width: 22%;">Matières</th>
+                                    <t t-if="c['multi']">
+                                        <th t-foreach="c['periods']" t-as="p"><t t-out="p['code']"/></th>
+                                        <th>Moy.<br/>annuelle</th>
+                                    </t>
+                                    <t t-else="">
+                                        <th style="width: 7%;">Moyen.<br/>Devoirs</th>
+                                        <th style="width: 7%;">Compos.</th>
+                                        <th style="width: 7%;">Moyen.<br/>Matière</th>
+                                    </t>
+                                    <th style="width: 5%;">Coef</th>
+                                    <th style="width: 8%;">Moy.Mat.<br/>Coeffic.</th>
+                                    <th t-if="not c['multi']" style="width: 6%;">Rang</th>
+                                    <th style="width: 14%;">Appréciation</th>
+                                    <th style="width: 14%;">Professeurs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="c['groups']" t-as="g">
+                                    <tr t-if="not g_first" class="bl-gap"><td t-att-colspan="ncols"/></tr>
+                                    <tr t-foreach="g['rows']" t-as="r">
+                                        <td class="bl-n"><t t-out="r['n']"/></td>
+                                        <td><t t-out="r['name']"/></td>
+                                        <t t-if="c['multi']">
+                                            <td t-foreach="r['cells']" t-as="cell" class="num"><t t-out="cell"/></td>
+                                            <td t-attf-class="num #{'bl-red' if r['low'] else 'bl-bold'}"><t t-out="r['avg']"/></td>
+                                        </t>
+                                        <t t-else="">
+                                            <td class="num"><t t-out="r['hw']"/></td>
+                                            <td class="num"><t t-out="r['comp']"/></td>
+                                            <td t-attf-class="num #{'bl-red' if r['low'] else 'bl-bold'}"><t t-out="r['avg']"/></td>
+                                        </t>
+                                        <td class="ctr"><t t-out="r['coef']"/></td>
+                                        <td class="num"><t t-out="r['weighted']"/></td>
+                                        <td t-if="not c['multi']" class="num"><t t-out="r['rank']"/></td>
+                                        <td><t t-out="r['appr']"/></td>
+                                        <td><t t-out="r['teacher']"/></td>
+                                    </tr>
+                                    <tr class="bl-gt">
+                                        <td class="bl-free"/>
+                                        <td t-att-colspan="lead - 1" class="bl-lab">TOTAL Groupe (<t t-out="g['code']"/>)
+                                            <span t-if="g['label']"> — <t t-out="g['label']"/></span></td>
+                                        <td class="ctr"><t t-out="g['total_coef']"/></td>
+                                        <td class="num"><t t-out="g['total_points']"/></td>
+                                        <td t-att-colspan="tail" class="bl-free"/>
+                                    </tr>
+                                    <tr class="bl-gt">
+                                        <td class="bl-free"/>
+                                        <td t-att-colspan="lead" class="bl-lab">Moyenne Groupe (<t t-out="g['code']"/>)</td>
+                                        <td class="num"><t t-out="g['average']"/></td>
+                                        <t t-if="c['multi']">
+                                            <td style="font-weight: normal;"><t t-out="g['appr']"/></td>
+                                            <td class="bl-free"/>
+                                        </t>
+                                        <t t-else="">
+                                            <td class="num"><t t-out="g['rank']"/></td>
+                                            <td style="font-weight: normal;"><t t-out="g['appr']"/></td>
+                                            <td class="bl-free"/>
+                                        </t>
+                                    </tr>
+                                </t>
+                                <tr class="bl-tg">
+                                    <td class="bl-free"/>
+                                    <td t-att-colspan="lead - 1">TOTAL Général</td>
+                                    <td class="ctr"><t t-out="c['total_coef']"/></td>
+                                    <td class="num"><t t-out="c['total_points']"/></td>
+                                    <td t-att-colspan="tail" class="bl-free"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Résultat + statistiques -->
+                        <table class="bl-res">
+                            <tr>
+                                <td style="width: 58%;">
+                                    <table class="bl-box">
+                                        <tr>
+                                            <td class="bl-hd" style="width: 50%;"><t t-out="c['result_label']"/></td>
+                                            <td class="bl-hd ctr" style="width: 25%; text-align: center;"><t t-out="c['result_avg']"/></td>
+                                            <td class="bl-hd" style="text-align: center;"><t t-if="c['show_rank']" t-out="c['result_rank']"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="bl-phrase">
+                                                <t t-if="c['result_phrase']" t-out="c['result_phrase']"/>
+                                                <div t-if="c['decision']" style="font-style: normal; font-weight: bold;">
+                                                    Décision du conseil de classe : <t t-out="c['decision']"/>
+                                                </div>
+                                                <div t-if="c['teacher_comment']" style="font-style: normal;"><t t-out="c['teacher_comment']"/></div>
+                                                <div t-if="c['director_comment']" style="font-style: normal;"><t t-out="c['director_comment']"/></div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width: 42%;">
+                                    <div t-if="c['show_stats']" class="bl-stat">
+                                        Plus forte moy. <span class="bl-dots">............</span> <b t-out="c['plus_forte']"/><br/>
+                                        Plus faible moy. <span class="bl-dots">...........</span> <b t-out="c['plus_faible']"/><br/>
+                                        Moy. classe <span class="bl-dots">...............</span> <b t-out="c['class_avg']"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </t>
+
+                    <div class="bl-city" t-out="c['city_date']"/>
+                    <table class="bl-sign">
+                        <tr>
+                            <td style="width: 50%;">Prof. Titulaire</td>
+                            <td>Le Directeur</td>
+                        </tr>
+                        <tr>
+                            <td class="bl-sn"><t t-out="c['teacher_name']"/>&#160;</td>
+                            <td class="bl-sn"><t t-out="c['director_name']"/>&#160;</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </template>
+
+        <!-- Bulletin A4 portrait -->
+        <template id="report_bulletin_document">
+            <t t-call="web.html_container">
+                <t t-foreach="cards" t-as="c">
+                    <div class="article">
+                    <t t-call="silina_edu.report_bulletin_styles"/>
+                    <div class="page">
+                        <t t-set="souche" t-value="False"/>
+                        <t t-set="stub_label" t-value="False"/>
+                        <t t-call="silina_edu.report_bulletin_card"/>
+                    </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <!-- Bulletin A4 paysage avec souche : deux exemplaires côte à côte -->
+        <template id="report_bulletin_souche_document">
+            <t t-call="web.html_container">
+                <t t-foreach="cards" t-as="c">
+                    <div class="article">
+                    <t t-call="silina_edu.report_bulletin_styles"/>
+                    <div class="page">
+                        <table class="bl-pair">
+                            <tr>
+                                <td class="bl-left">
+                                    <t t-set="souche" t-value="True"/>
+                                    <t t-set="stub_label" t-value="True"/>
+                                    <t t-call="silina_edu.report_bulletin_card"/>
+                                </td>
+                                <td class="bl-right">
+                                    <t t-set="souche" t-value="True"/>
+                                    <t t-set="stub_label" t-value="False"/>
+                                    <t t-call="silina_edu.report_bulletin_card"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>

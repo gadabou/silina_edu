@@ -13,12 +13,14 @@
             name="Tableau de Bord"
             parent="menu_silina_edu_root"
             action="action_dashboard"
+            groups="group_silina_edu_coordinator"
             sequence="5"/>
 
         <!-- Configuration -->
         <menuitem id="menu_silina_edu_configuration"
             name="Configuration"
             parent="menu_silina_edu_root"
+            groups="group_silina_edu_coordinator"
             sequence="100"/>
 
         <menuitem id="menu_academic_year"
@@ -44,6 +46,40 @@
             parent="menu_silina_edu_configuration"
             action="action_fee_type"
             sequence="4"/>
+
+        <menuitem id="menu_period"
+            name="Périodes"
+            parent="menu_silina_edu_configuration"
+            action="action_period"
+            sequence="5"/>
+
+        <menuitem id="menu_silina_settings"
+            name="Paramètres"
+            parent="menu_silina_edu_configuration"
+            action="action_silina_res_config_settings"
+            groups="base.group_system"
+            sequence="6"/>
+
+        <menuitem id="menu_discipline_sanction_type"
+            name="Types de sanction"
+            parent="menu_silina_edu_configuration"
+            action="action_discipline_sanction_type"
+            sequence="20"/>
+
+        <!-- Discipline -->
+        <menuitem id="menu_silina_edu_discipline"
+            name="Discipline"
+            parent="menu_silina_edu_root"
+            sequence="25"/>
+
+        <menuitem id="menu_discipline_absence" name="Absences"
+            parent="menu_silina_edu_discipline" action="action_discipline_absence" sequence="1"/>
+        <menuitem id="menu_discipline_late" name="Retards"
+            parent="menu_silina_edu_discipline" action="action_discipline_late" sequence="2"/>
+        <menuitem id="menu_discipline_sanction" name="Sanctions"
+            parent="menu_silina_edu_discipline" action="action_discipline_sanction" sequence="3"/>
+        <menuitem id="menu_discipline_conduct" name="Notes de conduite"
+            parent="menu_silina_edu_discipline" action="action_discipline_conduct" sequence="4"/>
 
         <!-- Gestion Académique -->
         <menuitem id="menu_silina_edu_academic"
@@ -91,18 +127,21 @@
             name="Parents/Tuteurs"
             parent="menu_silina_edu_students"
             action="action_parent"
+            groups="group_silina_edu_coordinator"
             sequence="2"/>
 
         <menuitem id="menu_student_document"
             name="Documents"
             parent="menu_silina_edu_students"
             action="action_student_document"
+            groups="group_silina_edu_coordinator"
             sequence="3"/>
 
         <!-- Personnel -->
         <menuitem id="menu_silina_edu_staff"
             name="Personnel"
             parent="menu_silina_edu_root"
+            groups="group_silina_edu_coordinator"
             sequence="30"/>
 
         <menuitem id="menu_teacher"
@@ -121,6 +160,7 @@
         <menuitem id="menu_silina_edu_fees"
             name="Facturation"
             parent="menu_silina_edu_root"
+            groups="group_silina_edu_coordinator"
             sequence="40"/>
 
         <menuitem id="menu_invoices"
@@ -159,6 +199,25 @@
             action="action_generate_report_card_wizard"
             sequence="1"/>
 
+        <menuitem id="menu_period_result"
+            name="Résultats de période"
+            parent="menu_silina_edu_reports"
+            action="action_period_result"
+            sequence="3"/>
+
+        <menuitem id="menu_annual_result"
+            name="Résultats annuels"
+            parent="menu_silina_edu_reports"
+            action="action_annual_result"
+            sequence="4"/>
+
+        <menuitem id="menu_compute_results"
+            name="Calculer les résultats"
+            parent="menu_silina_edu_reports"
+            action="action_compute_results_wizard"
+            groups="group_silina_edu_coordinator"
+            sequence="5"/>
+
         <menuitem id="menu_report_exam_summary"
             name="Résumés d'Examens"
             parent="menu_silina_edu_reports"
@@ -169,6 +228,7 @@
         <menuitem id="menu_silina_edu_tools"
             name="Outils"
             parent="menu_silina_edu_root"
+            groups="group_silina_edu_coordinator"
             sequence="60"/>
 
         <menuitem id="menu_bulk_promotion"
