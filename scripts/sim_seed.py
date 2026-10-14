@@ -40,7 +40,14 @@ company.write({
     'silina_footer_text': 'Ce bulletin ne doit pas être remis en duplicata.',
 })
 company.partner_id.write({'city': 'Lomé'})
+# Mise en page des documents : sans elle, Odoo ouvre l'assistant « Configurer la mise en page »
+layout = env.ref('web.external_layout_standard', raise_if_not_found=False)
+if layout and not company.external_report_layout_id:
+    company.external_report_layout_id = layout.id
 company.write({'city': 'Lomé'})
+
+# Le périmètre simulé s'arrête au collège : les élèves reçus en 3ème sortent diplômés.
+env['silina.level'].search([('code', '=', '3EME')]).write({'next_level_id': False})
 
 # ---------------------------------------------------------------- années
 YEARS = [

@@ -121,14 +121,14 @@ class GenerateFeeInvoices(models.TransientModel):
                 # année d'inscription) et CE type de frais. On se limite à
                 # l'enregistrement élève courant : les factures d'une autre
                 # année n'empêchent donc pas la génération de la nouvelle année.
-                existing_invoices = self.env['account.move'].search([
+                existing_invoices = self.env['account.move'].sudo().search([
                     ('silina_student_id', '=', student.id),
                     ('silina_fee_type_id', '=', self.fee_type_id.id),
                     ('state', 'in', ['draft', 'posted']),
                 ])
                 if not existing_invoices:
                     # Repli pour les factures créées avant le tag (par partner)
-                    existing_invoices = self.env['account.move'].search([
+                    existing_invoices = self.env['account.move'].sudo().search([
                         ('partner_id', '=', student.partner_id.id),
                         ('invoice_line_ids.product_id', '=', self.fee_type_id.product_id.id),
                         ('state', 'in', ['draft', 'posted']),
@@ -159,7 +159,7 @@ class GenerateFeeInvoices(models.TransientModel):
                         })],
                     }
 
-                    invoice = self.env['account.move'].create(invoice_vals)
+                    invoice = self.env['account.move'].sudo().create(invoice_vals)
                     # Post the invoice immediately
                     invoice.action_post()
                     invoice_count += 1

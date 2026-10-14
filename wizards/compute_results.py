@@ -51,10 +51,10 @@ class ComputeResultsWizard(models.TransientModel):
                 Annual.compute_for_classroom(classroom.id)
 
         if self.compute_period and not self.compute_annual:
-            action = self.env.ref('silina_edu.action_period_result').read()[0]
+            action = self.env['ir.actions.act_window']._for_xml_id('silina_edu.action_period_result')
             action['domain'] = [('classroom_id', 'in', classrooms.ids),
                                 ('period_id', 'in', periods.ids)]
         else:
-            action = self.env.ref('silina_edu.action_annual_result').read()[0]
+            action = self.env['ir.actions.act_window']._for_xml_id('silina_edu.action_annual_result')
             action['domain'] = [('classroom_id', 'in', classrooms.ids)]
         return action

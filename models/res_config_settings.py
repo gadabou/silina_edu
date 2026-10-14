@@ -129,7 +129,10 @@ class ResCompany(models.Model):
             address = ', '.join(p for p in parts if p)
         logo = False
         if self.silina_show_logo:
-            logo = self.silina_header_logo or self.logo
+            logo = self.silina_header_logo
+            # Le logo de la société est ignoré s'il s'agit de l'image « Your logo » d'Odoo.
+            if not logo and self.logo and self.logo != self._get_logo():
+                logo = self.logo
         return {
             'name': self.silina_school_name or self.name or '',
             'logo': logo,

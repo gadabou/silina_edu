@@ -284,7 +284,7 @@ class StudentFeePayment(models.TransientModel):
                 invoice = record.invoice_id
             elif record.student_id and record.student_id.partner_id and record.fee_type_id:
                 # Cas 2 : création/complément d'une facture de l'année en cours
-                invoice = self.env['account.move'].search([
+                invoice = self.env['account.move'].sudo().search([
                     ('partner_id', '=', record.student_id.partner_id.id),
                     ('move_type', '=', 'out_invoice'),
                     ('state', '=', 'posted'),
@@ -337,14 +337,14 @@ class StudentFeePayment(models.TransientModel):
         # Chercher la facture existante pour ce type de frais et cette année
         # d'inscription. On s'appuie sur le tag silina_student_id (précis) et,
         # à défaut, sur le partenaire + produit (factures historiques).
-        invoices = self.env['account.move'].search([
+        invoices = self.env['account.move'].sudo().search([
             ('silina_student_id', '=', self.student_id.id),
             ('silina_fee_type_id', '=', self.fee_type_id.id),
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
         ], order='create_date desc')
         if not invoices:
-            invoices = self.env['account.move'].search([
+            invoices = self.env['account.move'].sudo().search([
                 ('partner_id', '=', self.student_id.partner_id.id),
                 ('move_type', '=', 'out_invoice'),
                 ('state', '=', 'posted'),
@@ -420,7 +420,7 @@ class StudentFeePayment(models.TransientModel):
             'invoice_line_ids': invoice_lines,
         }
 
-        invoice = self.env['account.move'].create(invoice_vals)
+        invoice = self.env['account.move'].sudo().create(invoice_vals)
         invoice.action_post()
         return invoice
 
@@ -439,7 +439,7 @@ class StudentFeePayment(models.TransientModel):
             'journal_id': self._get_payment_journal().id,
         }
 
-        payment = self.env['account.payment'].create(payment_vals)
+        payment = self.env['account.payment'].sudo().create(payment_vals)
 
         # Ajouter la référence dans le mouvement comptable si fournie
         if self.reference:
@@ -466,7 +466,7 @@ class StudentFeePayment(models.TransientModel):
     def _get_payment_journal(self):
         """Récupérer le journal de paiement approprié"""
         journal_type = 'cash' if self.payment_method == 'cash' else 'bank'
-        journal = self.env['account.journal'].search([
+        journal = self.env['account.journal'].sudo().search([
             ('type', '=', journal_type),
             ('company_id', '=', self.env.company.id),
         ], limit=1)
