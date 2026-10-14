@@ -75,6 +75,16 @@
                     <div class="article">
                     <t t-call="silina_edu.report_livret_styles"/>
                     <div class="page lv-page">
+                        <t t-set="hd" t-value="company.get_silina_header()"/>
+                        <div t-if="hd['logo'] or hd['address'] or hd['phone'] or hd['email'] or hd['extra']"
+                             style="text-align: center; font-size: 7.5pt; margin-bottom: 4px;">
+                            <img t-if="hd['logo']" t-att-src="image_data_uri(hd['logo'])"
+                                 style="max-height: 16mm;"/>
+                            <div t-if="hd['address'] or hd['phone'] or hd['email']">
+                                <t t-out="' — '.join(x for x in (hd['address'], hd['phone'] and 'Tél : ' + hd['phone'], hd['email']) if x)"/>
+                            </div>
+                            <div t-if="hd['extra']" t-out="hd['extra']"/>
+                        </div>
                         <table class="lv-top">
                             <tr>
                                 <td><span class="lv-title" t-out="c['title']"/></td>
@@ -87,7 +97,7 @@
                         <table class="lv-id">
                             <tr>
                                 <td style="width: 14%;">École :</td>
-                                <td class="v" colspan="3"><t t-out="company.name"/></td>
+                                <td class="v" colspan="3"><t t-out="company.get_silina_header()['name']"/></td>
                             </tr>
                             <tr>
                                 <td>Nom et prénoms :</td>

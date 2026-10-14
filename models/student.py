@@ -373,7 +373,7 @@ class Student(models.Model):
         ]
         if not partners and not students.ids:
             return self.env['account.move']
-        return self.env['account.move'].search(domain)
+        return self.env['account.move'].sudo().search(domain)
 
     @api.depends('partner_id', 'registration_number', 'academic_year_id')
     def _compute_fee_summary(self):
@@ -408,7 +408,7 @@ class Student(models.Model):
 
             partners = persons.mapped('partner_id')
             if partners:
-                student.payment_count = self.env['account.payment'].search_count([
+                student.payment_count = self.env['account.payment'].sudo().search_count([
                     ('partner_id', 'in', partners.ids),
                     ('partner_type', '=', 'customer'),
                     ('state', '=', 'posted'),

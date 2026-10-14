@@ -68,6 +68,30 @@
                                 <field name="silina_ministry_line3"/>
                             </setting>
                         </block>
+                        <block title="Identité de l'en-tête (vide = informations de la société)">
+                            <setting string="Nom de l'établissement" help="Laisser vide pour utiliser le nom de la société.">
+                                <field name="silina_school_name"/>
+                            </setting>
+                            <setting string="Logo" help="Laisser vide pour utiliser le logo de la société.">
+                                <field name="silina_show_logo"/>
+                                <field name="silina_header_logo" widget="image" class="oe_avatar"/>
+                            </setting>
+                            <setting string="Adresse" help="Laisser vide pour utiliser l'adresse de la société.">
+                                <field name="silina_header_address"/>
+                            </setting>
+                            <setting string="Téléphone">
+                                <field name="silina_header_phone"/>
+                            </setting>
+                            <setting string="Email">
+                                <field name="silina_header_email"/>
+                            </setting>
+                            <setting string="Mention complémentaire" help="Agrément, boîte postale, etc.">
+                                <field name="silina_header_extra"/>
+                            </setting>
+                            <setting string="Pied de page">
+                                <field name="silina_footer_text"/>
+                            </setting>
+                        </block>
                         <block title="Groupes de matières du bulletin">
                             <setting string="Groupe A">
                                 <field name="silina_group_label_a"/>

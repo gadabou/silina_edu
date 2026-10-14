@@ -146,8 +146,9 @@
             <t t-set="lead" t-value="(3 + n_per) if c['multi'] else 5"/>
             <t t-set="tail" t-value="2 if c['multi'] else 3"/>
             <t t-set="ncols" t-value="lead + 2 + tail"/>
+            <t t-set="hd" t-value="company.get_silina_header()"/>
             <div t-attf-class="bl-wrap #{'bl-ws' if souche else ''}">
-                <div class="bl-mark" t-out="company.name"/>
+                <div class="bl-mark" t-out="hd['name']"/>
                 <div t-attf-class="bl-body bl #{'bl-s' if souche else ''}">
                     <div t-if="stub_label" class="bl-stub">SOUCHE — à conserver par l'établissement</div>
 
@@ -156,10 +157,12 @@
                         <tr>
                             <td style="width: 38%;">
                                 <div class="bl-min" t-out="c['ministry1']"/>
-                                <div class="bl-min-sub" t-out="company.name"/>
+                                <div class="bl-min-sub" t-out="hd['name']"/>
                             </td>
                             <td style="width: 24%; text-align: center;">
-                                &#160;
+                                <img t-if="hd['logo']" t-att-src="image_data_uri(hd['logo'])"
+                                     style="max-height: 18mm; max-width: 100%;"/>
+                                <t t-else="">&#160;</t>
                             </td>
                             <td style="width: 38%;">
                                 <div class="bl-rep" t-out="c['ministry2']"/>
@@ -167,7 +170,11 @@
                             </td>
                         </tr>
                     </table>
-                    <div class="bl-school" t-out="company.name"/>
+                    <div class="bl-school" t-out="hd['name']"/>
+                    <div class="bl-min-sub" t-if="hd['address'] or hd['phone'] or hd['email']">
+                        <t t-out="' — '.join(x for x in (hd['address'], hd['phone'] and 'Tél : ' + hd['phone'], hd['email']) if x)"/>
+                    </div>
+                    <div class="bl-min-sub" t-if="hd['extra']" t-out="hd['extra']"/>
                     <div class="bl-title" t-out="c['title']"/>
                     <div class="bl-year" t-out="c['year_name']"/>
                     <div class="bl-name" t-out="c['student_name']"/>
@@ -299,6 +306,7 @@
                             <td class="bl-sn"><t t-out="c['director_name']"/>&#160;</td>
                         </tr>
                     </table>
+                    <div class="bl-min-sub" t-if="hd['footer']" t-out="hd['footer']"/>
                 </div>
             </div>
         </template>

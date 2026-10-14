@@ -47,6 +47,17 @@ class ResCompany(models.Model):
     silina_ministry_line3 = fields.Char(
         string='En-tête officiel - devise', default='Travail – Liberté – Patrie')
 
+    # Identité de l'en-tête (vide = valeur de la société Odoo)
+    silina_school_name = fields.Char(string="Nom de l'établissement (en-tête)")
+    silina_show_logo = fields.Boolean(string="Afficher le logo", default=True)
+    silina_header_logo = fields.Binary(string="Logo de l'en-tête")
+    silina_header_address = fields.Char(string="Adresse (en-tête)")
+    silina_header_phone = fields.Char(string="Téléphone (en-tête)")
+    silina_header_email = fields.Char(string="Email (en-tête)")
+    silina_header_extra = fields.Char(
+        string="Mention complémentaire (agrément, BP, etc.)")
+    silina_footer_text = fields.Char(string="Pied de page des bulletins")
+
     # Groupes de matières du bulletin
     silina_group_label_a = fields.Char(
         string='Libellé du groupe A', default='Matières littéraires')
@@ -103,6 +114,30 @@ class ResCompany(models.Model):
             'ministry_lines': [self.silina_ministry_line1 or '',
                                self.silina_ministry_line2 or '',
                                self.silina_ministry_line3 or ''],
+        }
+
+    def get_silina_header(self):
+        """En-tête des bulletins/livrets : valeurs saisies dans les paramètres,
+        à défaut celles de la société enregistrée."""
+        self.ensure_one()
+        partner = self.partner_id
+        address = self.silina_header_address
+        if not address:
+            parts = [self.street, self.street2,
+                     ' '.join(p for p in (self.zip, self.city) if p),
+                     self.country_id.name]
+            address = ', '.join(p for p in parts if p)
+        logo = False
+        if self.silina_show_logo:
+            logo = self.silina_header_logo or self.logo
+        return {
+            'name': self.silina_school_name or self.name or '',
+            'logo': logo,
+            'address': address,
+            'phone': self.silina_header_phone or self.phone or partner.phone or '',
+            'email': self.silina_header_email or self.email or '',
+            'extra': self.silina_header_extra or '',
+            'footer': self.silina_footer_text or '',
         }
 
     def group_label(self, code):
@@ -199,6 +234,22 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.silina_ministry_line2', readonly=False)
     silina_ministry_line3 = fields.Char(
         related='company_id.silina_ministry_line3', readonly=False)
+    silina_school_name = fields.Char(
+        related='company_id.silina_school_name', readonly=False)
+    silina_show_logo = fields.Boolean(
+        related='company_id.silina_show_logo', readonly=False)
+    silina_header_logo = fields.Binary(
+        related='company_id.silina_header_logo', readonly=False)
+    silina_header_address = fields.Char(
+        related='company_id.silina_header_address', readonly=False)
+    silina_header_phone = fields.Char(
+        related='company_id.silina_header_phone', readonly=False)
+    silina_header_email = fields.Char(
+        related='company_id.silina_header_email', readonly=False)
+    silina_header_extra = fields.Char(
+        related='company_id.silina_header_extra', readonly=False)
+    silina_footer_text = fields.Char(
+        related='company_id.silina_footer_text', readonly=False)
     silina_group_label_a = fields.Char(
         related='company_id.silina_group_label_a', readonly=False)
     silina_group_label_b = fields.Char(

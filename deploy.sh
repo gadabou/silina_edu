@@ -238,6 +238,7 @@ if [[ "$MODE" == "copy" ]]; then
         --exclude '.git/' --exclude '.idea/' --exclude '__pycache__/' \
         --exclude '*.pyc' --exclude '*.backup' --exclude 'deploy.sh' \
         --exclude '.dockerignore' --exclude '.gitignore' \
+        --exclude '.env' --exclude 'scripts/' --exclude '.claude/' \
         "$MODULE_SRC/" "$TARGET/"
     (( DRY_RUN )) || info "Copié dans $TARGET ($(du -sh "$TARGET" 2>/dev/null | cut -f1))"
 else

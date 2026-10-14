@@ -143,7 +143,7 @@ class Dashboard(models.Model):
                     ('invoice_date', '<=', year.date_end),
                 ]
 
-            Invoice = self.env['account.move']
+            Invoice = self.env['account.move'].sudo()
             invoices = Invoice.search(domain)
 
             # Calculer les montants
