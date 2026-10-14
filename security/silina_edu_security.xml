@@ -99,6 +99,60 @@
             <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
         </record>
 
+
+        <!-- Périmètre enseignant : classes, affectations, parents, documents -->
+        <record id="silina_classroom_rule_teacher" model="ir.rule">
+            <field name="name">Classe: enseignant limité à ses classes</field>
+            <field name="model_id" ref="model_silina_classroom"/>
+            <field name="domain_force">['|', ('subject_assignment_ids.teacher_id.user_id', '=', user.id), ('main_teacher_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_teacher'))]"/>
+        </record>
+        <record id="silina_classroom_rule_coordinator" model="ir.rule">
+            <field name="name">Classe: tous droits pour coordinateur</field>
+            <field name="model_id" ref="model_silina_classroom"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
+        </record>
+
+        <record id="silina_subject_assignment_rule_teacher" model="ir.rule">
+            <field name="name">Affectation: enseignant limité à ses classes</field>
+            <field name="model_id" ref="model_silina_subject_assignment"/>
+            <field name="domain_force">['|', ('teacher_id.user_id', '=', user.id), ('classroom_id.main_teacher_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_teacher'))]"/>
+        </record>
+        <record id="silina_subject_assignment_rule_coordinator" model="ir.rule">
+            <field name="name">Affectation: tous droits pour coordinateur</field>
+            <field name="model_id" ref="model_silina_subject_assignment"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
+        </record>
+
+        <record id="silina_parent_rule_teacher" model="ir.rule">
+            <field name="name">Parent: enseignant limité à ses classes</field>
+            <field name="model_id" ref="model_silina_parent"/>
+            <field name="domain_force">['|', ('student_ids.classroom_id.subject_assignment_ids.teacher_id.user_id', '=', user.id), ('student_ids.classroom_id.main_teacher_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_teacher'))]"/>
+        </record>
+        <record id="silina_parent_rule_coordinator" model="ir.rule">
+            <field name="name">Parent: tous droits pour coordinateur</field>
+            <field name="model_id" ref="model_silina_parent"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
+        </record>
+
+        <record id="silina_student_document_rule_teacher" model="ir.rule">
+            <field name="name">Document élève: enseignant limité à ses classes</field>
+            <field name="model_id" ref="model_silina_student_document"/>
+            <field name="domain_force">['|', ('student_id.classroom_id.subject_assignment_ids.teacher_id.user_id', '=', user.id), ('student_id.classroom_id.main_teacher_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_teacher'))]"/>
+        </record>
+        <record id="silina_student_document_rule_coordinator" model="ir.rule">
+            <field name="name">Document élève: tous droits pour coordinateur</field>
+            <field name="model_id" ref="model_silina_student_document"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_silina_edu_coordinator'))]"/>
+        </record>
+
         <!-- Examens -->
         <record id="silina_exam_rule_teacher" model="ir.rule">
             <field name="name">Examen: enseignant limité à ses classes/matières ou créés par lui</field>
