@@ -259,6 +259,16 @@
                                     <td class="num"><t t-out="c['total_points']"/></td>
                                     <td t-att-colspan="tail" class="bl-free"/>
                                 </tr>
+                                <tr t-if="c['general_avg']" class="bl-tg">
+                                    <td class="bl-free"/>
+                                    <td t-att-colspan="lead">Moyenne Générale</td>
+                                    <td class="num"><t t-out="c['general_avg']"/></td>
+                                    <t t-if="not c['multi']">
+                                        <td class="num"><t t-if="c['show_rank']" t-out="c['general_rank']"/></td>
+                                    </t>
+                                    <td style="font-weight: normal;"><t t-out="c['general_appr']"/></td>
+                                    <td class="bl-free"/>
+                                </tr>
                             </tbody>
                         </table>
 
@@ -289,6 +299,36 @@
                                         Plus forte moy. <span class="bl-dots">............</span> <b t-out="c['plus_forte']"/><br/>
                                         Plus faible moy. <span class="bl-dots">...........</span> <b t-out="c['plus_faible']"/><br/>
                                         Moy. classe <span class="bl-dots">...............</span> <b t-out="c['class_avg']"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Résultat annuel (dernier bulletin de l'année) -->
+                        <table t-if="c['annual_block']" class="bl-res">
+                            <tr>
+                                <td style="width: 58%;">
+                                    <table class="bl-box">
+                                        <tr>
+                                            <td class="bl-hd" style="width: 50%;"><t t-out="c['annual_block']['label']"/></td>
+                                            <td class="bl-hd" style="width: 25%; text-align: center;"><t t-out="c['annual_block']['avg']"/></td>
+                                            <td class="bl-hd" style="text-align: center;"><t t-out="c['annual_block']['rank']"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="bl-phrase">
+                                                <t t-out="c['annual_block']['phrase']"/>
+                                                <div t-if="c['annual_block']['decision']" style="font-style: normal; font-weight: bold;">
+                                                    <t t-out="c['annual_block']['decision']"/>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width: 42%;">
+                                    <div class="bl-stat">
+                                        <t t-foreach="c['annual_block']['periods']" t-as="ap">
+                                            <t t-out="ap['label']"/> <span class="bl-dots">..........</span> <b t-out="ap['avg']"/><br/>
+                                        </t>
                                     </div>
                                 </td>
                             </tr>

@@ -41,7 +41,7 @@ class ResCompany(models.Model):
     silina_director_name = fields.Char(string='Nom du directeur')
     silina_ministry_line1 = fields.Char(
         string='En-tête officiel - ligne 1',
-        default="MINISTÈRE DES ENSEIGNEMENTS PRIMAIRE, SECONDAIRE, TECHNIQUE ET DE L'ARTISANAT")
+        default="Ministère de l'éducation nationale")
     silina_ministry_line2 = fields.Char(
         string='En-tête officiel - ligne 2', default='RÉPUBLIQUE TOGOLAISE')
     silina_ministry_line3 = fields.Char(

@@ -43,13 +43,23 @@
                                 <field name="include_rank"/>
                                 <field name="include_statistics"/>
                                 <field name="include_comments"/>
+                                <field name="include_annual" invisible="report_scope == 'annual'"/>
+                                <field name="skip_empty"/>
                                 <field name="bulletin_stub"/>
                             </group>
                             <group>
                                 <field name="bulletin_count"/>
                                 <field name="livret_count"/>
+                                <field name="no_result_count"/>
                             </group>
                         </group>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="no_result_count == 0">
+                            <strong><field name="no_result_count" class="oe_inline"/> élève(s)</strong> n'ont
+                            aucune note confirmée sur cette période : leur bulletin serait vide.
+                            Vérifiez la saisie des résultats d'examen (état « Confirmé »).
+                            Avec « Ignorer les élèves sans résultat », ils ne sont pas imprimés.
+                        </div>
                         <div class="alert alert-info" role="alert"
                              invisible="bulletin_count == 0 or livret_count == 0">
                             La sélection mélange collège/lycée (bulletins, A4 portrait) et

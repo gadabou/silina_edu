@@ -17,6 +17,8 @@ Choix d'architecture
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
 
+from odoo.addons.silina_edu.models import result_utils as ru
+
 # Niveaux de compétence : (seuil minimal sur 20, libellé, classe CSS).
 # Le seuil s'applique à la moyenne ramenée sur 20 (barème société pris en compte).
 COMPETENCY_LEVELS = [
@@ -108,7 +110,7 @@ class ReportCardMixin(models.AbstractModel):
     @api.model
     def get_report_card_action(self, student_ids, period_id=False, annual=False,
                                kind=None, include_rank=True, include_statistics=True,
-                               include_comments=True, stub=False):
+                               include_comments=True, stub=False, include_annual=True):
         """Retourne l'action de rapport adaptée au degré des élèves.
 
         :param kind: 'bulletin' / 'livret' pour restreindre un lot mixte ;
@@ -138,9 +140,14 @@ class ReportCardMixin(models.AbstractModel):
             'include_rank': bool(include_rank),
             'include_statistics': bool(include_statistics),
             'include_comments': bool(include_comments),
+            'include_annual': bool(include_annual),
         }
         ref = REPORT_REFS['bulletin_stub'] if (selected == 'bulletin' and stub) else REPORT_REFS[selected]
-        return self.env.ref(ref).report_action(target.ids, data=data)
+        # Les bulletins/livrets ont leur propre en-tête (réglages SILINA) : on évite
+        # l'assistant « Configurer l'agencement de votre document » d'Odoo, qui
+        # s'ouvre pour l'administrateur tant que la société n'a pas de mise en page.
+        return self.env.ref(ref).with_context(discard_logo_check=True).report_action(
+            target.ids, data=data)
 
     @api.model
     def _kind_for_degree(self, degree):
@@ -168,6 +175,7 @@ class ReportCardMixin(models.AbstractModel):
             'include_rank': bool(opt('include_rank', True)),
             'include_statistics': bool(opt('include_statistics', True)),
             'include_comments': bool(opt('include_comments', True)),
+            'include_annual': bool(opt('include_annual', True)),
             'settings': self.env.company.get_silina_settings(),
             'cache': {},
         }
@@ -466,6 +474,15 @@ class ReportBulletin(models.AbstractModel):
                 'Résultat du %s %s' % (ordinal, kind))
 
     @api.model
+    def _bl_period_short(self, period, all_periods):
+        """'1er Semestre' (libellé court d'une période, sans « Résultat du »)."""
+        label = self._bl_period_labels(period, all_periods)[1]
+        for prefix in ('Résultat du ', 'Résultat - '):
+            if label.startswith(prefix):
+                return label[len(prefix):]
+        return label
+
+    @api.model
     def _build_card(self, student, opts):
         env = self.env
         bn = self._bl_num
@@ -509,14 +526,35 @@ class ReportBulletin(models.AbstractModel):
             for line in res.line_ids:
                 entry = subjects.setdefault(line.subject_id.id, {'subject': line.subject_id, 'lines': {}})
                 entry['lines'][p.id] = line
+        entries = list(subjects.values())
+        if subjects and classroom:
+            # Matières de la classe sans aucune note confirmée pour cet élève :
+            # affichées « **** » (jamais 0), hors totaux et moyennes.
+            for a in classroom.subject_assignment_ids:
+                if a.subject_id.id not in subjects:
+                    entries.append({'subject': a.subject_id, 'lines': {}, 'assignment': a})
         groups_map = {}
         number = 0
-        for entry in sorted(subjects.values(), key=lambda e: (e['subject'].sequence, e['subject'].id)):
+        for entry in sorted(entries, key=lambda e: (e['subject'].sequence, e['subject'].id)):
             subj = entry['subject']
             code = subj.report_group or 'C'
             lines = [entry['lines'][p.id] for p in shown if p.id in entry['lines']]
             last = lines[-1] if lines else False
             if not last:
+                a = entry.get('assignment')
+                if not a:
+                    continue
+                number += 1
+                groups_map.setdefault(code, []).append({
+                    'n': number, 'name': subj.name,
+                    'hw': '****', 'comp': '****',
+                    'avg': '****', 'low': False,
+                    'coef': '--', 'weighted': '****',
+                    'rank': '', 'appr': '',
+                    'teacher': a.teacher_name or '',
+                    'cells': ['****'] * len(shown),
+                    '_avg': None, '_coef': 0.0, '_w': 0.0,
+                })
                 continue
             number += 1
             cells = [bn(entry['lines'][p.id].average) if p.id in entry['lines'] else '' for p in shown]
@@ -569,12 +607,13 @@ class ReportBulletin(models.AbstractModel):
                 g_appr = (rec.appreciation or (company.appreciation_for(g_avg) if g_avg is not None else ''))
             tot_coef += g_coef
             tot_points += g_points
+            rated = any(r['_avg'] is not None for r in rows)
             groups.append({
                 'code': code,
                 'label': company.group_label(code),
                 'rows': rows,
-                'total_coef': self._bl_coef(g_coef),
-                'total_points': bn(g_points),
+                'total_coef': self._bl_coef(g_coef) if rated else '',
+                'total_points': bn(g_points) if rated else '',
                 'average': bn(g_avg) if g_avg is not None else '',
                 'rank': g_rank, 'appr': g_appr,
             })
@@ -620,6 +659,45 @@ class ReportBulletin(models.AbstractModel):
             plus_forte = res.plus_forte if has else None
             plus_faible = res.plus_faible if has else None
             rank = self._bl_rank(res.rank) if has and opts['include_rank'] else ''
+
+        general_appr = company.appreciation_for(avg) if avg is not None else ''
+
+        # --- résultat annuel (dernier bulletin de l'année) ----------------
+        annual_block = False
+        if (not multi and opts.get('include_annual', True) and period
+                and len(all_periods) > 1 and period == all_periods[-1]):
+            ar = env['silina.annual.result'].search(
+                [('student_id', '=', student.id), ('academic_year_id', '=', year.id)], limit=1)
+            per_res = PR.search([('student_id', '=', student.id),
+                                 ('period_id', 'in', all_periods.ids),
+                                 ('has_average', '=', True)])
+            per_by_id = {r.period_id.id: r for r in per_res}
+            if ar and ar.has_average:
+                a_avg, a_rank = ar.annual_average, ar.rank
+            elif per_res:
+                a_avg = sum(per_res.mapped('average')) / len(per_res)
+                a_rank = 0
+            else:
+                a_avg, a_rank = None, 0
+            if a_avg is not None:
+                a_decision = ''
+                if ar and 'final_decision' in ar._fields:
+                    final = ar.final_decision
+                    if final and final != 'pending':
+                        a_decision = (ar.decision_label if 'decision_label' in ar._fields else '') \
+                            or DECISION_LABELS.get(final, str(final))
+                a_appr = company.appreciation_for(a_avg)
+                annual_block = {
+                    'label': 'Résultat annuel %s' % year.name,
+                    'avg': bn(a_avg),
+                    'rank': self._bl_rank(a_rank) if (opts['include_rank'] and a_rank) else '',
+                    'phrase': '%s, %s.' % (ru.average_in_words(a_avg), a_appr) if a_appr
+                    else '%s.' % ru.average_in_words(a_avg),
+                    'decision': a_decision,
+                    'periods': [{'label': self._bl_period_short(p, all_periods),
+                                 'avg': bn(per_by_id[p.id].average)}
+                                for p in all_periods if p.id in per_by_id],
+                }
 
         # --- identité ---------------------------------------------------
         female = student.gender == 'female'
@@ -675,6 +753,10 @@ class ReportBulletin(models.AbstractModel):
             'groups': groups,
             'total_coef': self._bl_coef(tot_coef),
             'total_points': bn(tot_points),
+            'general_avg': bn(avg) if avg is not None else '',
+            'general_rank': rank,
+            'general_appr': general_appr,
+            'annual_block': annual_block,
             'result_label': result_label,
             'result_avg': bn(avg),
             'result_rank': rank,
@@ -968,6 +1050,16 @@ class GenerateReportCard(models.TransientModel):
     include_comments = fields.Boolean(
         string='Inclure les commentaires', default=True,
         help="Afficher les appréciations de l'enseignant et de la direction")
+    include_annual = fields.Boolean(
+        string='Résultat annuel sur le dernier bulletin', default=True,
+        help="Sur le bulletin de la dernière période de l'année : ajoute le résultat annuel, "
+             "le rang annuel, les moyennes des périodes et la décision du conseil de classe.")
+    skip_empty = fields.Boolean(
+        string='Ignorer les élèves sans résultat', default=True,
+        help="Ne pas imprimer de bulletin vide pour les élèves sans aucune note confirmée "
+             "sur la période.")
+    no_result_count = fields.Integer(
+        string='Élèves sans résultat', compute='_compute_counts')
     bulletin_stub = fields.Boolean(
         string='Avec souche', default=False,
         help="Bulletin paysage avec deux exemplaires côte à côte "
@@ -1001,13 +1093,37 @@ class GenerateReportCard(models.TransientModel):
             ], order='classroom_id, name')
         return self.student_ids
 
-    @api.depends('generation_type', 'classroom_ids', 'student_ids', 'academic_year_id')
+    def _target_periods(self):
+        """Périodes concernées par le document (toutes pour l'annuel)."""
+        self.ensure_one()
+        if self.report_scope == 'annual':
+            return self.env['silina.period'].search(
+                [('academic_year_id', '=', self.academic_year_id.id)],
+                order='sequence, date_start, id')
+        return self.period_id
+
+    def _students_with_result(self, students):
+        """Élèves ayant au moins un résultat calculé ou une note confirmée sur les périodes cibles."""
+        self.ensure_one()
+        periods = self._target_periods()
+        if not (students and periods):
+            return self.env['silina.student']
+        base = [('student_id', 'in', students.ids), ('period_id', 'in', periods.ids)]
+        with_result = self.env['silina.period.result'].search(
+            base + [('has_average', '=', True)]).mapped('student_id')
+        with_marks = self.env['silina.exam.result'].search(
+            base + [('state', '=', 'confirmed'), ('mark_entered', '=', True)]).mapped('student_id')
+        return with_result | with_marks
+
+    @api.depends('generation_type', 'classroom_ids', 'student_ids', 'academic_year_id',
+                 'report_scope', 'period_id')
     def _compute_counts(self):
         for wiz in self:
             students = wiz._get_students()
             livrets = students.filtered(lambda s: s.degree in LIVRET_DEGREES)
             wiz.livret_count = len(livrets)
             wiz.bulletin_count = len(students) - len(livrets)
+            wiz.no_result_count = len(students - wiz._students_with_result(students))
 
     def _check_ready(self):
         self.ensure_one()
@@ -1036,11 +1152,13 @@ class GenerateReportCard(models.TransientModel):
         self.ensure_one()
         PR = self.env['silina.period.result']
         AR = self.env['silina.annual.result']
-        annual = self.report_scope == 'annual'
         year = self.academic_year_id
-        periods = (self.env['silina.period'].search(
+        all_periods = self.env['silina.period'].search(
             [('academic_year_id', '=', year.id)], order='sequence, date_start, id')
-            if annual else self.period_id)
+        # Le dernier bulletin de l'année affiche aussi le résultat annuel.
+        annual = self.report_scope == 'annual' or bool(
+            self.include_annual and len(all_periods) > 1 and self.period_id == all_periods[-1])
+        periods = all_periods if annual else self.period_id
         for classroom in students.mapped('classroom_id'):
             cls_students = students.filtered(lambda s: s.classroom_id == classroom)
             for period in periods:
@@ -1059,6 +1177,13 @@ class GenerateReportCard(models.TransientModel):
     def _generate(self, students, kind=None):
         self.ensure_one()
         self._ensure_results(students)
+        if self.skip_empty:
+            with_result = self._students_with_result(students)
+            students = students.filtered(lambda s: s in with_result)
+            if not students:
+                raise UserError(_(
+                    "Aucun élève n'a de résultat pour cette période : saisissez et confirmez "
+                    "les notes (Résultats d'examen) avant de générer les bulletins."))
         lang = self.language if self.env['res.lang'].search_count(
             [('code', '=', self.language), ('active', '=', True)]) else self.env.lang
         mixin = self.env['silina.report.card.mixin'].with_context(lang=lang)
@@ -1071,6 +1196,7 @@ class GenerateReportCard(models.TransientModel):
             include_statistics=self.include_statistics,
             include_comments=self.include_comments,
             stub=self.bulletin_stub,
+            include_annual=self.include_annual,
         )
 
     def action_generate_preview(self):
