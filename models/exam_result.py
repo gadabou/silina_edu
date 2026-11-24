@@ -65,6 +65,14 @@ class ExamResult(models.Model):
         string='Note obtenue',
         tracking=True
     )
+    mark_entered = fields.Boolean(
+        string='Note saisie', default=False, copy=False, tracking=True,
+        help="Faux tant qu'aucune note n'a été saisie : la ligne est alors affichée "
+             "vide (et non 0) et ne peut pas être confirmée.")
+    marks_input = fields.Char(
+        string='Note obtenue', compute='_compute_marks_input',
+        inverse='_inverse_marks_input',
+        help="Note saisie (vide = non saisie). Accepte la virgule ou le point.")
     total_marks = fields.Float(
         related='exam_id.total_marks',
         string='Note maximale',
@@ -126,6 +134,51 @@ class ExamResult(models.Model):
         ('result_unique', 'unique(exam_id, student_id, subject_id)',
          'Un résultat existe déjà pour cet examen, élève et matière!'),
     ]
+
+    @api.model
+    def _format_mark(self, value):
+        text = ('%.2f' % value).rstrip('0').rstrip('.')
+        return text.replace('.', ',')
+
+    @api.model
+    def _parse_mark(self, text):
+        """'' -> None (non saisie) ; '12,5' -> 12.5."""
+        text = (text or '').strip().replace(',', '.')
+        if not text:
+            return None
+        try:
+            return float(text)
+        except ValueError:
+            raise ValidationError(_("« %s » n'est pas une note valide.") % text)
+
+    @api.depends('marks_obtained', 'mark_entered')
+    def _compute_marks_input(self):
+        for record in self:
+            record.marks_input = (
+                self._format_mark(record.marks_obtained) if record.mark_entered else '')
+
+    def _inverse_marks_input(self):
+        for record in self:
+            value = self._parse_mark(record.marks_input)
+            if value is None:
+                record.write({'mark_entered': False, 'marks_obtained': 0.0})
+            else:
+                record.write({'mark_entered': True, 'marks_obtained': value})
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Compatibilité (import, scripts) : une note fournie = note saisie.
+        for vals in vals_list:
+            if 'marks_obtained' in vals and 'mark_entered' not in vals \
+                    and 'marks_input' not in vals:
+                vals['mark_entered'] = True
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if 'marks_obtained' in vals and 'mark_entered' not in vals \
+                and 'marks_input' not in vals:
+            vals = dict(vals, mark_entered=True)
+        return super().write(vals)
 
     @api.constrains('marks_obtained', 'total_marks')
     def _check_marks(self):
@@ -206,6 +259,7 @@ class ExamResult(models.Model):
             ('evaluation_kind', '=', 'composition'),
             ('composition_number', '>', 0),
             ('state', '=', 'confirmed'),
+            ('mark_entered', '=', True),
         ])
         coef_map = {}
         if classroom:
@@ -266,6 +320,10 @@ class ExamResult(models.Model):
 
     def action_confirm(self):
         self.ensure_one()
+        if not self.mark_entered:
+            raise ValidationError(_(
+                "Saisissez la note de %(student)s (%(subject)s) avant de confirmer.",
+                student=self.student_id.name, subject=self.subject_id.name))
         self.state = 'confirmed'
         return True
 

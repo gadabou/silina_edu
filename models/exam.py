@@ -184,8 +184,54 @@ class Exam(models.Model):
             result.append((record.id, name))
         return result
 
+    def _get_result_classrooms(self):
+        """Classes concernées : celles de l'examen, sinon celles de ses niveaux
+        pour l'année scolaire de l'examen."""
+        self.ensure_one()
+        if self.classroom_ids:
+            return self.classroom_ids
+        if self.level_ids:
+            return self.env['silina.classroom'].sudo().search([
+                ('academic_year_id', '=', self.academic_year_id.id),
+                ('level_id', 'in', self.level_ids.ids),
+            ])
+        return self.env['silina.classroom']
+
+    def action_generate_results(self):
+        """Charge une ligne de résultat (brouillon, sans note saisie) pour chaque
+        élève des classes de l'examen et chaque matière de l'examen. Les lignes
+        existantes ne sont jamais modifiées. Sans matière sur l'examen, on prend
+        les matières affectées à la classe.
+
+        Les lignes en brouillon ne comptent ni dans les bulletins ni dans les
+        classements : seuls les résultats confirmés sont utilisés."""
+        Result = self.env['silina.exam.result'].sudo()
+        for exam in self:
+            existing = {(r.student_id.id, r.subject_id.id)
+                        for r in Result.search([('exam_id', '=', exam.id)])}
+            vals_list = []
+            for classroom in exam._get_result_classrooms():
+                subjects = exam.subject_ids or \
+                    classroom.sudo().subject_assignment_ids.mapped('subject_id')
+                students = classroom.sudo().student_ids.filtered(
+                    lambda s: s.active and s.state in ('enrolled', 'promoted', 'repeated'))
+                for student in students:
+                    for subject in subjects:
+                        if (student.id, subject.id) in existing:
+                            continue
+                        existing.add((student.id, subject.id))
+                        vals_list.append({
+                            'exam_id': exam.id,
+                            'student_id': student.id,
+                            'subject_id': subject.id,
+                        })
+            if vals_list:
+                Result.create(vals_list)
+        return True
+
     def action_view_results(self):
         self.ensure_one()
+        self.action_generate_results()
         return {
             'name': _('Résultats d\'examen'),
             'type': 'ir.actions.act_window',

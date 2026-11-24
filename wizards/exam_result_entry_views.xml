@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_exam_result_entry_form" model="ir.ui.view">
+            <field name="name">silina.exam.result.entry.form</field>
+            <field name="model">silina.exam.result.entry</field>
+            <field name="arch" type="xml">
+                <form string="Saisie des résultats">
+                    <group>
+                        <field name="exam_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="total_marks" invisible="not exam_id"/>
+                    </group>
+                    <field name="line_ids" nolabel="1" invisible="not exam_id">
+                        <list editable="bottom" create="0" delete="0" no_open="1">
+                            <field name="student_id" readonly="1" force_save="1"/>
+                            <field name="classroom_id" readonly="1" force_save="1"/>
+                            <field name="subject_id" readonly="1" force_save="1"/>
+                            <field name="result_id" column_invisible="1" force_save="1"/>
+                            <field name="marks_input" placeholder="—"/>
+                        </list>
+                    </field>
+                    <footer>
+                        <button name="action_save" string="Enregistrer" type="object" class="btn-primary"/>
+                        <button string="Annuler" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_exam_result_entry" model="ir.actions.act_window">
+            <field name="name">Saisie des résultats</field>
+            <field name="res_model">silina.exam.result.entry</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'dialog_size': 'extra-large'}</field>
+        </record>
+
+    </data>
+</odoo>

@@ -200,6 +200,7 @@ class PeriodResult(models.Model):
             ('student_id', 'in', students.ids),
             ('period_id', '=', period.id),
             ('state', '=', 'confirmed'),
+            ('mark_entered', '=', True),
         ])
         marks = {}  # {student_id: {subject_id: {'devoir': [...], 'composition': [...]}}}
         subjects = {}

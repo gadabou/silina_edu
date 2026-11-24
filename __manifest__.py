@@ -1,6 +1,6 @@
 {
     'name': 'SILINA-EDU - Gestion Scolaire',
-    'version': '18.0.1.3.0',
+    'version': '18.0.1.4.0',
     'category': 'Education',
     'summary': 'Module complet de gestion d\'un complexe scolaire (Primaire, Collège, Lycée)',
     'description': """
@@ -84,6 +84,7 @@
         'wizards/generate_fee_invoices_views.xml',
         'wizards/student_fee_payment_views.xml',
         'wizards/student_reenroll_views.xml',
+        'wizards/exam_result_entry_views.xml',
 
         # Menus (loaded after wizards)
         'views/menu_views.xml',
@@ -92,6 +93,7 @@
     'assets': {
         'web.assets_backend': [
             'silina_edu/static/src/css/silina_edu.css',
+            'silina_edu/static/src/js/exam_result_list.js',
         ],
         'web.report_assets_common': [
             'silina_edu/static/src/css/report_styles.css',
