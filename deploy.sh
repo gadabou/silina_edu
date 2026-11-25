@@ -273,6 +273,17 @@ fi
 # ---------------------------------------------------------------------------
 step "$([[ $ACTION == install ]] && echo Installation || echo 'Mise à jour') de $MODULE_NAME sur '$DB_NAME'"
 
+# `docker exec` ne passe pas par l'entrypoint de l'image : les paramètres de connexion
+# PostgreSQL (variables HOST/PORT/USER/PASSWORD du conteneur) doivent être transmis à
+# Odoo, sinon il tente le socket local et échoue (« .s.PGSQL.5432 : No such file »).
+cenv() { dk exec "$ODOO_CONTAINER" sh -c "printf %s \"\${$1:-$2}\"" 2>/dev/null; }
+EXEC_ENV=(
+    -e "PGHOST=${ODOO_DB_HOST:-$(cenv HOST db)}"
+    -e "PGPORT=${ODOO_DB_PORT:-$(cenv PORT 5432)}"
+    -e "PGUSER=${ODOO_DB_USER:-$(cenv USER "$DB_USER")}"
+    -e "PGPASSWORD=${ODOO_DB_PASSWORD:-$(cenv PASSWORD odoo)}"
+)
+
 ODOO_ARGS=(odoo -c "$ODOO_CONF" -d "$DB_NAME" --stop-after-init --no-http --log-level=info)
 [[ "$ACTION" == "install" ]] && ODOO_ARGS+=(-i "$MODULE_NAME") || ODOO_ARGS+=(-u "$MODULE_NAME")
 (( DB_EXISTS )) || { (( WITH_DEMO )) || ODOO_ARGS+=(--without-demo=all); }
@@ -283,7 +294,7 @@ if (( DRY_RUN )); then
 else
     info "Journal complet : $LOG"
     set +e
-    dk exec "$ODOO_CONTAINER" "${ODOO_ARGS[@]}" 2>&1 | tee "$LOG" \
+    dk exec "${EXEC_ENV[@]}" "$ODOO_CONTAINER" "${ODOO_ARGS[@]}" 2>&1 | tee "$LOG" \
         | grep -Ei 'ERROR|WARNING|CRITICAL|loading|Modules loaded' | tail -40
     RC=${PIPESTATUS[0]}
     set -e
