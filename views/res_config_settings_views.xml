@@ -61,6 +61,15 @@
                             <setting string="En-tête - ligne 1">
                                 <field name="silina_ministry_line1"/>
                             </setting>
+                            <setting string="En-tête - direction régionale">
+                                <field name="silina_ministry_dre"/>
+                            </setting>
+                            <setting string="En-tête - inspection">
+                                <field name="silina_ministry_inspection"/>
+                            </setting>
+                            <setting string="En-tête - établissement">
+                                <field name="silina_ministry_school"/>
+                            </setting>
                             <setting string="En-tête - ligne 2">
                                 <field name="silina_ministry_line2"/>
                             </setting>

@@ -1,6 +1,6 @@
 {
     'name': 'SILINA-EDU - Gestion Scolaire',
-    'version': '18.0.1.5.0',
+    'version': '18.0.1.6.0',
     'category': 'Education',
     'summary': 'Module complet de gestion d\'un complexe scolaire (Primaire, Collège, Lycée)',
     'description': """

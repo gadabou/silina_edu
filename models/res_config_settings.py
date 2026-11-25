@@ -41,7 +41,16 @@ class ResCompany(models.Model):
     silina_director_name = fields.Char(string='Nom du directeur')
     silina_ministry_line1 = fields.Char(
         string='En-tête officiel - ligne 1',
-        default="Ministère de l'éducation nationale")
+        default="Ministère de l'éducation nationale (MEN)")
+    silina_ministry_dre = fields.Char(
+        string='En-tête officiel - direction régionale',
+        default="Direction régionale de l'éducation de Plateaux Ouest (DRE-PO)")
+    silina_ministry_inspection = fields.Char(
+        string='En-tête officiel - inspection',
+        default="Inspection de l'enseignement secondaire général (ISEG) Kpalimé")
+    silina_ministry_school = fields.Char(
+        string='En-tête officiel - établissement',
+        default='Complexe scolaire Bons Citoyens')
     silina_ministry_line2 = fields.Char(
         string='En-tête officiel - ligne 2', default='RÉPUBLIQUE TOGOLAISE')
     silina_ministry_line3 = fields.Char(
@@ -233,6 +242,12 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.silina_director_name', readonly=False)
     silina_ministry_line1 = fields.Char(
         related='company_id.silina_ministry_line1', readonly=False)
+    silina_ministry_dre = fields.Char(
+        related='company_id.silina_ministry_dre', readonly=False)
+    silina_ministry_inspection = fields.Char(
+        related='company_id.silina_ministry_inspection', readonly=False)
+    silina_ministry_school = fields.Char(
+        related='company_id.silina_ministry_school', readonly=False)
     silina_ministry_line2 = fields.Char(
         related='company_id.silina_ministry_line2', readonly=False)
     silina_ministry_line3 = fields.Char(

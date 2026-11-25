@@ -84,7 +84,6 @@
                 .bl-tbl th { background-color: #dde3f0; text-align: center; font-weight: bold; font-size: 6.5pt; }
                 .bl-tbl td.num { text-align: right; padding-right: 5px; }
                 .bl-tbl td.ctr { text-align: center; }
-                .bl-tbl td.bl-n { border: none; text-align: right; padding-right: 2px; width: 3%; font-size: 6.5pt; vertical-align: top; }
                 .bl-tbl td.bl-free { border: none; }
                 .bl-tbl tr.bl-gt td { background-color: #f1f3f9; font-weight: bold; }
                 .bl-tbl tr.bl-gt td.bl-free { background-color: transparent; }
@@ -126,7 +125,6 @@
                 .bl.bl-s .bl-class { font-size: 7pt; margin-bottom: 3px; }
                 .bl.bl-s .bl-tbl th { font-size: 5.3pt; padding: 0 2px; }
                 .bl.bl-s .bl-tbl td { font-size: 5.7pt; padding: 0 2px; }
-                .bl.bl-s .bl-tbl td.bl-n { font-size: 5.3pt; }
                 .bl.bl-s .bl-tbl tr.bl-gap td { height: 4px; }
                 .bl.bl-s .bl-res { margin-top: 4px; }
                 .bl.bl-s .bl-box td, .bl.bl-s .bl-phrase, .bl.bl-s .bl-stat { font-size: 5.7pt; }
@@ -143,8 +141,8 @@
              ============================================================ -->
         <template id="report_bulletin_card">
             <t t-set="n_per" t-value="len(c['periods'])"/>
-            <t t-set="lead" t-value="(3 + n_per) if c['multi'] else 5"/>
-            <t t-set="tail" t-value="2 if c['multi'] else 3"/>
+            <t t-set="lead" t-value="(2 + n_per) if c['multi'] else 4"/>
+            <t t-set="tail" t-value="3 if c['multi'] else 4"/>
             <t t-set="ncols" t-value="lead + 2 + tail"/>
             <t t-set="hd" t-value="company.get_silina_header()"/>
             <div t-attf-class="bl-wrap #{'bl-ws' if souche else ''}">
@@ -155,11 +153,13 @@
                     <!-- En-tête -->
                     <table class="bl-head">
                         <tr>
-                            <td style="width: 38%;">
+                            <td style="width: 42%;">
                                 <div class="bl-min" t-out="c['ministry1']"/>
-                                <div class="bl-min-sub" t-out="hd['name']"/>
+                                <div class="bl-min" t-if="c['ministry_dre']" t-out="c['ministry_dre']"/>
+                                <div class="bl-min" t-if="c['ministry_insp']" t-out="c['ministry_insp']"/>
+                                <div class="bl-min" t-out="c['ministry_school']"/>
                             </td>
-                            <td style="width: 24%; text-align: center;">
+                            <td style="width: 20%; text-align: center;">
                                 <img t-if="hd['logo']" t-att-src="image_data_uri(hd['logo'])"
                                      style="max-height: 18mm; max-width: 100%;"/>
                                 <t t-else="">&#160;</t>
@@ -190,7 +190,6 @@
                         <table class="bl-tbl">
                             <thead>
                                 <tr>
-                                    <td class="bl-n" style="border: none;"/>
                                     <th style="width: 22%;">Matières</th>
                                     <t t-if="c['multi']">
                                         <th t-foreach="c['periods']" t-as="p"><t t-out="p['code']"/></th>
@@ -204,15 +203,15 @@
                                     <th style="width: 5%;">Coef</th>
                                     <th style="width: 8%;">Moy.Mat.<br/>Coeffic.</th>
                                     <th t-if="not c['multi']" style="width: 6%;">Rang</th>
-                                    <th style="width: 14%;">Appréciation</th>
-                                    <th style="width: 14%;">Professeurs</th>
+                                    <th style="width: 12%;">Appréciation</th>
+                                    <th style="width: 10%;">Signature</th>
+                                    <th style="width: 13%;">Professeurs</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <t t-foreach="c['groups']" t-as="g">
                                     <tr t-if="not g_first" class="bl-gap"><td t-att-colspan="ncols"/></tr>
                                     <tr t-foreach="g['rows']" t-as="r">
-                                        <td class="bl-n"><t t-out="r['n']"/></td>
                                         <td><t t-out="r['name']"/></td>
                                         <t t-if="c['multi']">
                                             <td t-foreach="r['cells']" t-as="cell" class="num"><t t-out="cell"/></td>
@@ -227,47 +226,44 @@
                                         <td class="num"><t t-out="r['weighted']"/></td>
                                         <td t-if="not c['multi']" class="num"><t t-out="r['rank']"/></td>
                                         <td><t t-out="r['appr']"/></td>
+                                        <td/>
                                         <td><t t-out="r['teacher']"/></td>
                                     </tr>
                                     <tr class="bl-gt">
-                                        <td class="bl-free"/>
-                                        <td t-att-colspan="lead - 1" class="bl-lab">TOTAL Groupe (<t t-out="g['code']"/>)
+                                        <td t-att-colspan="lead" class="bl-lab">TOTAL Groupe (<t t-out="g['code']"/>)
                                             <span t-if="g['label']"> — <t t-out="g['label']"/></span></td>
                                         <td class="ctr"><t t-out="g['total_coef']"/></td>
                                         <td class="num"><t t-out="g['total_points']"/></td>
                                         <td t-att-colspan="tail" class="bl-free"/>
                                     </tr>
                                     <tr class="bl-gt">
-                                        <td class="bl-free"/>
-                                        <td t-att-colspan="lead" class="bl-lab">Moyenne Groupe (<t t-out="g['code']"/>)</td>
+                                        <td t-att-colspan="lead + 1" class="bl-lab">Moyenne Groupe (<t t-out="g['code']"/>)</td>
                                         <td class="num"><t t-out="g['average']"/></td>
                                         <t t-if="c['multi']">
                                             <td style="font-weight: normal;"><t t-out="g['appr']"/></td>
-                                            <td class="bl-free"/>
+                                            <td colspan="2" class="bl-free"/>
                                         </t>
                                         <t t-else="">
                                             <td class="num"><t t-out="g['rank']"/></td>
                                             <td style="font-weight: normal;"><t t-out="g['appr']"/></td>
-                                            <td class="bl-free"/>
+                                            <td colspan="2" class="bl-free"/>
                                         </t>
                                     </tr>
                                 </t>
                                 <tr class="bl-tg">
-                                    <td class="bl-free"/>
-                                    <td t-att-colspan="lead - 1">TOTAL Général</td>
+                                    <td t-att-colspan="lead">TOTAL Général</td>
                                     <td class="ctr"><t t-out="c['total_coef']"/></td>
                                     <td class="num"><t t-out="c['total_points']"/></td>
                                     <td t-att-colspan="tail" class="bl-free"/>
                                 </tr>
                                 <tr t-if="c['general_avg']" class="bl-tg">
-                                    <td class="bl-free"/>
-                                    <td t-att-colspan="lead">Moyenne Générale</td>
+                                    <td t-att-colspan="lead + 1">Moyenne Générale</td>
                                     <td class="num"><t t-out="c['general_avg']"/></td>
                                     <t t-if="not c['multi']">
                                         <td class="num"><t t-if="c['show_rank']" t-out="c['general_rank']"/></td>
                                     </t>
                                     <td style="font-weight: normal;"><t t-out="c['general_appr']"/></td>
-                                    <td class="bl-free"/>
+                                    <td colspan="2" class="bl-free"/>
                                 </tr>
                             </tbody>
                         </table>
